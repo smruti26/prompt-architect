@@ -26,12 +26,12 @@ import { Logo } from "./logo";
 import { useNavigate } from "@tanstack/react-router";
 
 const items = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "AI Workspace", url: "/workspace", icon: Sparkles },
-  { title: "Diagram Studio", url: "/diagrams", icon: GitBranch },
-  { title: "Code Generator", url: "/generator", icon: Code2 },
-  { title: "Documentation", url: "/docs", icon: FileText },
-  { title: "Profile", url: "/profile", icon: UserCircle2 },
+  { title: "Dashboard", url: "/app/dashboard", icon: LayoutDashboard },
+  { title: "AI Workspace", url: "/app/workspace", icon: Sparkles },
+  { title: "Diagram Studio", url: "/app/diagrams", icon: GitBranch },
+  { title: "Code Generator", url: "/app/generator", icon: Code2 },
+  { title: "Documentation", url: "/app/docs", icon: FileText },
+  { title: "Profile", url: "/app/profile", icon: UserCircle2 },
 ];
 
 export function AppSidebar() {
@@ -50,7 +50,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
-                const active = pathname === item.url || (item.url !== "/dashboard" && pathname.startsWith(item.url));
+                const active = pathname === item.url || (item.url !== "/app/dashboard" && pathname.startsWith(item.url));
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={active}>
