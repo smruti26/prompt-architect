@@ -315,6 +315,21 @@ spec:
 `;
 
   // ---------- Diagrams ----------
+  // Shared vibrant palette for all diagrams — applied via Mermaid classDef.
+  const PALETTE = `
+  classDef user fill:#fde68a,stroke:#f59e0b,stroke-width:1.5px,color:#451a03,rx:14,ry:14;
+  classDef edge fill:#a7f3d0,stroke:#10b981,stroke-width:1.5px,color:#064e3b,rx:14,ry:14;
+  classDef web fill:#bae6fd,stroke:#0ea5e9,stroke-width:1.5px,color:#0c4a6e,rx:14,ry:14;
+  classDef svc fill:#c7d2fe,stroke:#6366f1,stroke-width:1.5px,color:#1e1b4b,rx:14,ry:14;
+  classDef api fill:#ddd6fe,stroke:#8b5cf6,stroke-width:1.5px,color:#2e1065,rx:14,ry:14;
+  classDef data fill:#fbcfe8,stroke:#ec4899,stroke-width:1.5px,color:#500724,rx:14,ry:14;
+  classDef cache fill:#fecaca,stroke:#ef4444,stroke-width:1.5px,color:#450a0a,rx:14,ry:14;
+  classDef queue fill:#fed7aa,stroke:#f97316,stroke-width:1.5px,color:#431407,rx:14,ry:14;
+  classDef infra fill:#e2e8f0,stroke:#64748b,stroke-width:1.5px,color:#0f172a,rx:14,ry:14;
+  classDef accent fill:#22d3ee,stroke:#0891b2,stroke-width:2px,color:#0f172a,rx:14,ry:14;
+  classDef pay fill:#fef9c3,stroke:#eab308,stroke-width:1.5px,color:#422006,rx:14,ry:14;
+  `;
+
   const diagrams: Blueprint["diagrams"] = {
     architecture: {
       title: "Application Architecture",
@@ -328,7 +343,11 @@ spec:
   ${d.ecommerce ? "GW --> PAY[Payments Service]\n  PAY --> STRIPE[(Stripe)]\n  " : ""}API --> DB[(${d.mongo ? "MongoDB" : d.mysql ? "MySQL" : "PostgreSQL"})]
   API --> CACHE[(Redis)]
   API --> Q[[Event Bus]]
-  Q --> WRK[Background Workers]`,
+  Q --> WRK[Background Workers]
+  ${PALETTE}
+  class U user; class CDN edge; class WEB web; class GW accent;
+  class AUTH,API svc; class DB data; class CACHE cache; class Q queue; class WRK infra;
+  ${d.ecommerce ? "class PAY pay; class STRIPE pay;" : ""}`,
     },
     component: {
       title: "Component Tree",
@@ -346,7 +365,12 @@ spec:
   Dashboard --> StatCard
   Dashboard --> Chart
   Products --> ProductGrid
-  ProductGrid --> ProductCard`,
+  ProductGrid --> ProductCard
+  ${PALETTE}
+  class App accent; class Router edge;
+  class Layout,Header,Sidebar,Page web;
+  class Dashboard,Products,Cart,Profile svc;
+  class StatCard,Chart,ProductGrid,ProductCard api;`,
     },
     folder: {
       title: "Folder Structure",
@@ -360,7 +384,10 @@ spec:
   I --> K[k8s/]
   I --> TF[terraform/]
   R --> G[.github/workflows/]
-  R --> DC[docs/]`,
+  R --> DC[docs/]
+  ${PALETTE}
+  class R accent; class A,I,G,DC edge;
+  class W,AP web; class D,K,TF infra;`,
     },
     microfrontend: {
       title: "Microfrontend Architecture",
@@ -373,7 +400,9 @@ spec:
   MF1 -. shared lib .-> DS[Design System]
   MF2 -.-> DS
   MF3 -.-> DS
-  MF4 -.-> DS`,
+  MF4 -.-> DS
+  ${PALETTE}
+  class SHELL accent; class MF1,MF2,MF3,MF4 web; class DS api;`,
     },
     apiflow: {
       title: "API Flow",
@@ -386,7 +415,10 @@ spec:
   CTRL --> SVC[Service Layer]
   SVC --> REPO[Repository]
   REPO --> DB[(Database)]
-  SVC --> CACHE[(Redis)]`,
+  SVC --> CACHE[(Redis)]
+  ${PALETTE}
+  class C user; class LB,GW edge; class MW accent;
+  class CTRL,SVC,REPO svc; class DB data; class CACHE cache;`,
     },
     er: {
       title: "Entity Relationship",
@@ -450,7 +482,10 @@ spec:
   API --> DB
   API --> REPL
   API --> CACHE
-  API --> OBS`,
+  API --> OBS
+  ${PALETTE}
+  class CDN,WAF edge; class WEB web; class API,WRK svc;
+  class DB,REPL data; class CACHE cache; class OBS infra;`,
     },
     cicd: {
       title: "CI/CD Pipeline",
@@ -463,7 +498,11 @@ spec:
   SCAN --> PUSH[Push to Registry]
   PUSH --> STG[Deploy Staging]
   STG --> SMOKE[Smoke Tests]
-  SMOKE --> PROD[Deploy Production]`,
+  SMOKE --> PROD[Deploy Production]
+  ${PALETTE}
+  class PR user; class LINT,TEST,SMOKE edge;
+  class BUILD,SCAN svc; class PUSH api;
+  class STG queue; class PROD accent;`,
     },
   };
 
