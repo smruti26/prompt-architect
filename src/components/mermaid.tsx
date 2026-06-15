@@ -200,9 +200,13 @@ export function Mermaid({
     let panZoom: PanZoomInstance | null = null;
     let cancelled = false;
     (async () => {
-      const mod = await import("svg-pan-zoom");
+      const mod: unknown = await import("svg-pan-zoom");
       if (cancelled) return;
-      const svgPanZoom = (mod as { default: typeof import("svg-pan-zoom") }).default ?? (mod as unknown as typeof import("svg-pan-zoom"));
+      const m = mod as { default?: unknown };
+      const svgPanZoom = (typeof m.default === "function" ? m.default : (mod as unknown)) as (
+        el: SVGSVGElement,
+        opts: Record<string, unknown>,
+      ) => PanZoomInstance;
       panZoom = svgPanZoom(svgEl, {
         zoomEnabled: true,
         controlIconsEnabled: false,
