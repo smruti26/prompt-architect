@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { ArrowUpRight, Boxes, Code2, FileText, GitBranch, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_app/dashboard")({
+export const Route = createFileRoute("/app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — ArchAI" }] }),
   component: Dashboard,
 });
@@ -33,7 +33,7 @@ function Dashboard() {
             Generate architecture, code, diagrams and docs from one prompt or repository.
           </p>
         </div>
-        <Link to="/workspace">
+        <Link to="/app/workspace">
           <Button className="bg-gradient-to-r from-[var(--cyan-glow)] to-[var(--violet-glow)] text-background hover:opacity-90">
             New generation <ArrowUpRight className="ml-1.5 h-4 w-4" />
           </Button>
@@ -80,7 +80,7 @@ function Dashboard() {
               <div className="rounded-lg border border-dashed border-border bg-muted/20 p-8 text-center">
                 <Boxes className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
                 <p className="text-sm text-muted-foreground">No blueprint yet. Start one in the AI Workspace.</p>
-                <Link to="/workspace">
+                <Link to="/app/workspace">
                   <Button className="mt-4" variant="outline">Open AI Workspace</Button>
                 </Link>
               </div>
@@ -94,10 +94,10 @@ function Dashboard() {
           </CardHeader>
           <CardContent className="space-y-2">
             {[
-              { to: "/workspace" as const, label: "Generate from prompt", icon: Sparkles },
-              { to: "/diagrams" as const, label: "Open diagram studio", icon: GitBranch },
-              { to: "/generator" as const, label: "Browse generated code", icon: Code2 },
-              { to: "/docs" as const, label: "Read HLD / LLD docs", icon: FileText },
+              { to: "/app/workspace" as const, label: "Generate from prompt", icon: Sparkles },
+              { to: "/app/diagrams" as const, label: "Open diagram studio", icon: GitBranch },
+              { to: "/app/generator" as const, label: "Browse generated code", icon: Code2 },
+              { to: "/app/docs" as const, label: "Read HLD / LLD docs", icon: FileText },
             ].map(({ to, label, icon: Icon }) => (
               <Link key={to} to={to} className="flex items-center justify-between rounded-lg border border-border/60 bg-card/40 p-3 text-sm transition-colors hover:bg-card">
                 <span className="flex items-center gap-2"><Icon className="h-4 w-4 text-primary" />{label}</span>

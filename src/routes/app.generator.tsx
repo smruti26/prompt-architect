@@ -9,7 +9,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_app/generator")({
+export const Route = createFileRoute("/app/generator")({
   head: () => ({ meta: [{ title: "Code Generator — ArchAI" }] }),
   component: Generator,
 });
@@ -27,7 +27,7 @@ function Generator() {
             <Sparkles className="mx-auto h-8 w-8 text-primary" />
             <h2 className="font-display text-xl font-semibold">Nothing generated yet</h2>
             <p className="text-sm text-muted-foreground">Run a generation in the AI Workspace to see the code.</p>
-            <Link to="/workspace"><Button>Open Workspace</Button></Link>
+            <Link to="/app/workspace"><Button>Open Workspace</Button></Link>
           </CardContent>
         </Card>
       </div>

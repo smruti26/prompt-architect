@@ -9,7 +9,7 @@ import jsPDF from "jspdf";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_app/docs")({
+export const Route = createFileRoute("/app/docs")({
   head: () => ({ meta: [{ title: "Documentation Center — ArchAI" }] }),
   component: Docs,
 });
@@ -68,7 +68,7 @@ function Docs() {
             <Sparkles className="mx-auto h-8 w-8 text-primary" />
             <h2 className="font-display text-xl font-semibold">No documentation yet</h2>
             <p className="text-sm text-muted-foreground">Generate a blueprint to populate the documentation center.</p>
-            <Link to="/workspace"><Button>Generate now</Button></Link>
+            <Link to="/app/workspace"><Button>Generate now</Button></Link>
           </CardContent>
         </Card>
       </div>
