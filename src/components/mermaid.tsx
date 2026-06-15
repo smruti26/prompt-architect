@@ -1,5 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "@/lib/theme";
+type PanZoomInstance = {
+  destroy: () => void;
+  resize: () => void;
+  fit: () => void;
+  center: () => void;
+  resetZoom: () => void;
+  resetPan: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  getZoom: () => number;
+  getPan: () => { x: number; y: number };
+  getSizes: () => { width: number; height: number; realZoom: number; viewBox: { x: number; y: number; width: number; height: number } };
+  zoom: (n: number) => void;
+  zoomAtPoint: (n: number, p: { x: number; y: number }) => void;
+  pan: (p: { x: number; y: number }) => void;
+  panBy: (p: { x: number; y: number }) => void;
+  setOnZoom: (fn: (z: number) => void) => void;
+  setOnPan: (fn: (p: { x: number; y: number }) => void) => void;
+};
 
 let injected = false;
 function injectMermaidStyles() {
@@ -8,7 +27,9 @@ function injectMermaidStyles() {
   const style = document.createElement("style");
   style.setAttribute("data-mermaid-enhance", "true");
   style.textContent = `
-    .mermaid-host svg { width: 100%; height: auto; font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important; overflow: visible; }
+    .mermaid-host { width: 100%; height: 100%; }
+    .mermaid-host svg { width: 100% !important; height: 100% !important; max-width: none !important; font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important; }
+    .mermaid-host .node { cursor: pointer; }
     .mermaid-host .node rect,
     .mermaid-host .node polygon,
     .mermaid-host .node circle,
@@ -22,7 +43,23 @@ function injectMermaidStyles() {
     .mermaid-host .node:hover circle,
     .mermaid-host .node:hover ellipse,
     .mermaid-host .node:hover path {
-      filter: drop-shadow(0 12px 28px rgba(34, 211, 238, 0.5));
+      filter: drop-shadow(0 12px 28px rgba(34, 211, 238, 0.55));
+    }
+    .mermaid-host .node.archai-selected rect,
+    .mermaid-host .node.archai-selected polygon,
+    .mermaid-host .node.archai-selected circle,
+    .mermaid-host .node.archai-selected ellipse,
+    .mermaid-host .node.archai-selected path {
+      stroke: #22d3ee !important;
+      stroke-width: 3px !important;
+      filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.85)) drop-shadow(0 0 24px rgba(167, 139, 250, 0.55));
+    }
+    .mermaid-host .node.archai-dim { opacity: 0.35; transition: opacity .2s ease; }
+    .mermaid-host .edgePath.archai-dim { opacity: 0.18; }
+    .mermaid-host .edgePath.archai-highlight .path {
+      stroke: #22d3ee !important;
+      stroke-width: 2.5px !important;
+      filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.7));
     }
     .mermaid-host .nodeLabel,
     .mermaid-host .edgeLabel,
@@ -51,11 +88,42 @@ function injectMermaidStyles() {
   document.head.appendChild(style);
 }
 
-export function Mermaid({ chart, id }: { chart: string; id: string }) {
-  const ref = useRef<HTMLDivElement>(null);
+/** Extract the logical node ID from a mermaid g.node DOM id like "flowchart-API-12". */
+export function nodeIdFromDom(domId: string): string | null {
+  const m = domId.match(/^flowchart-(.+?)-\d+$/);
+  return m ? m[1] : null;
+}
+
+export type MermaidApi = {
+  panZoom: PanZoomInstance | null;
+  svg: SVGSVGElement | null;
+  fit: () => void;
+  reset: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+};
+
+export function Mermaid({
+  chart,
+  id,
+  onNodeClick,
+  onReady,
+  selectedId,
+  highlightIds,
+}: {
+  chart: string;
+  id: string;
+  onNodeClick?: (nodeId: string) => void;
+  onReady?: (api: MermaidApi) => void;
+  selectedId?: string | null;
+  highlightIds?: Set<string>;
+}) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const panZoomRef = useRef<PanZoomInstance | null>(null);
   const { mode } = useTheme();
   const [svg, setSvg] = useState("");
 
+  // Render mermaid -> SVG string
   useEffect(() => {
     injectMermaidStyles();
     let cancel = false;
@@ -66,8 +134,8 @@ export function Mermaid({ chart, id }: { chart: string; id: string }) {
         startOnLoad: false,
         theme: "base",
         fontFamily: "Inter, ui-sans-serif, system-ui",
-        flowchart: { htmlLabels: true, curve: "basis", padding: 24, nodeSpacing: 60, rankSpacing: 80, useMaxWidth: true },
-        sequence: { actorMargin: 60, messageMargin: 40, mirrorActors: false, useMaxWidth: true },
+        flowchart: { htmlLabels: true, curve: "basis", padding: 24, nodeSpacing: 60, rankSpacing: 80, useMaxWidth: false },
+        sequence: { actorMargin: 60, messageMargin: 40, mirrorActors: false, useMaxWidth: false },
         themeVariables: {
           background: "transparent",
           fontFamily: "Inter, ui-sans-serif",
@@ -105,5 +173,97 @@ export function Mermaid({ chart, id }: { chart: string; id: string }) {
     return () => { cancel = true; };
   }, [chart, id, mode]);
 
-  return <div ref={ref} className="mermaid-host w-full overflow-auto" dangerouslySetInnerHTML={{ __html: svg }} />;
+  // Wire pan/zoom + node click handlers after each new SVG render.
+  useEffect(() => {
+    if (!svg || !hostRef.current) return;
+    const svgEl = hostRef.current.querySelector("svg") as SVGSVGElement | null;
+    if (!svgEl) return;
+
+    // Mermaid sometimes ships max-width inline styles that fight pan-zoom.
+    svgEl.style.maxWidth = "none";
+    svgEl.style.width = "100%";
+    svgEl.style.height = "100%";
+
+    // Click handlers on nodes.
+    const nodes = Array.from(svgEl.querySelectorAll<SVGGElement>("g.node"));
+    const handlers: Array<() => void> = [];
+    nodes.forEach((n) => {
+      const handler = (e: Event) => {
+        e.stopPropagation();
+        const nid = nodeIdFromDom(n.id);
+        if (nid && onNodeClick) onNodeClick(nid);
+      };
+      n.addEventListener("click", handler);
+      handlers.push(() => n.removeEventListener("click", handler));
+    });
+
+    let panZoom: PanZoomInstance | null = null;
+    let cancelled = false;
+    (async () => {
+      const mod: unknown = await import("svg-pan-zoom");
+      if (cancelled) return;
+      const m = mod as { default?: unknown };
+      const svgPanZoom = (typeof m.default === "function" ? m.default : (mod as unknown)) as (
+        el: SVGSVGElement,
+        opts: Record<string, unknown>,
+      ) => PanZoomInstance;
+      panZoom = svgPanZoom(svgEl, {
+        zoomEnabled: true,
+        controlIconsEnabled: false,
+        fit: true,
+        center: true,
+        minZoom: 0.2,
+        maxZoom: 8,
+        zoomScaleSensitivity: 0.4,
+        contain: false,
+        mouseWheelZoomEnabled: true,
+        dblClickZoomEnabled: false,
+      });
+      panZoomRef.current = panZoom;
+      onReady?.({
+        svg: svgEl,
+        panZoom,
+        fit: () => { panZoom?.resize(); panZoom?.fit(); panZoom?.center(); },
+        reset: () => { panZoom?.resetZoom(); panZoom?.resetPan(); panZoom?.center(); },
+        zoomIn: () => panZoom?.zoomIn(),
+        zoomOut: () => panZoom?.zoomOut(),
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+      handlers.forEach((u) => u());
+      try { panZoom?.destroy(); } catch { /* noop */ }
+      panZoomRef.current = null;
+    };
+  }, [svg, onNodeClick, onReady]);
+
+  // Apply selection / highlight classes.
+  useEffect(() => {
+    if (!hostRef.current) return;
+    const svgEl = hostRef.current.querySelector("svg");
+    if (!svgEl) return;
+    const nodes = Array.from(svgEl.querySelectorAll<SVGGElement>("g.node"));
+    const edges = Array.from(svgEl.querySelectorAll<SVGGElement>("g.edgePath, path.flowchart-link"));
+    nodes.forEach((n) => { n.classList.remove("archai-selected", "archai-dim"); });
+    edges.forEach((e) => { e.classList.remove("archai-highlight", "archai-dim"); });
+    if (!selectedId) return;
+    const hi = highlightIds ?? new Set([selectedId]);
+    nodes.forEach((n) => {
+      const nid = nodeIdFromDom(n.id);
+      if (!nid) return;
+      if (nid === selectedId) n.classList.add("archai-selected");
+      else if (!hi.has(nid)) n.classList.add("archai-dim");
+    });
+    edges.forEach((e) => {
+      const eid = e.id || "";
+      // mermaid edge ids look like "L-A-B-0" or class "LS-A LE-B"
+      const cls = (e.getAttribute("class") || "") + " " + eid;
+      const touchesSelected = cls.includes(`-${selectedId}-`) || cls.includes(`LS-${selectedId}`) || cls.includes(`LE-${selectedId}`);
+      if (touchesSelected) e.classList.add("archai-highlight");
+      else e.classList.add("archai-dim");
+    });
+  }, [selectedId, highlightIds, svg]);
+
+  return <div ref={hostRef} className="mermaid-host" dangerouslySetInnerHTML={{ __html: svg }} />;
 }
