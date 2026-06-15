@@ -16,6 +16,7 @@ import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppGeneratorRouteImport } from './routes/app.generator'
 import { Route as AppDocsRouteImport } from './routes/app.docs'
+import { Route as AppDiagramsRouteImport } from './routes/app.diagrams'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 
 const AuthRoute = AuthRouteImport.update({
@@ -53,6 +54,11 @@ const AppDocsRoute = AppDocsRouteImport.update({
   path: '/docs',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDiagramsRoute = AppDiagramsRouteImport.update({
+  id: '/diagrams',
+  path: '/diagrams',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/profile': typeof AppProfileRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/profile': typeof AppProfileRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/profile': typeof AppProfileRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/app/dashboard'
+    | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
     | '/app/profile'
@@ -107,6 +117,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/app/dashboard'
+    | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
     | '/app/profile'
@@ -117,6 +128,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/app/dashboard'
+    | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
     | '/app/profile'
@@ -180,6 +192,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDocsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/diagrams': {
+      id: '/app/diagrams'
+      path: '/diagrams'
+      fullPath: '/app/diagrams'
+      preLoaderRoute: typeof AppDiagramsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/dashboard': {
       id: '/app/dashboard'
       path: '/dashboard'
@@ -192,6 +211,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDiagramsRoute: typeof AppDiagramsRoute
   AppDocsRoute: typeof AppDocsRoute
   AppGeneratorRoute: typeof AppGeneratorRoute
   AppProfileRoute: typeof AppProfileRoute
@@ -200,6 +220,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
+  AppDiagramsRoute: AppDiagramsRoute,
   AppDocsRoute: AppDocsRoute,
   AppGeneratorRoute: AppGeneratorRoute,
   AppProfileRoute: AppProfileRoute,
