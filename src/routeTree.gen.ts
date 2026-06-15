@@ -10,14 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AppWorkspaceRouteImport } from './routes/_app.workspace'
-import { Route as AppProfileRouteImport } from './routes/_app.profile'
-import { Route as AppGeneratorRouteImport } from './routes/_app.generator'
-import { Route as AppDocsRouteImport } from './routes/_app.docs'
-import { Route as AppDiagramsRouteImport } from './routes/_app.diagrams'
-import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
+import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppGeneratorRouteImport } from './routes/app.generator'
+import { Route as AppDocsRouteImport } from './routes/app.docs'
+import { Route as AppDiagramsRouteImport } from './routes/app.diagrams'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -25,7 +25,8 @@ const AuthRoute = AuthRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
-  id: '/_app',
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -66,68 +67,72 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/dashboard': typeof AppDashboardRoute
-  '/diagrams': typeof AppDiagramsRoute
-  '/docs': typeof AppDocsRoute
-  '/generator': typeof AppGeneratorRoute
-  '/profile': typeof AppProfileRoute
-  '/workspace': typeof AppWorkspaceRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/diagrams': typeof AppDiagramsRoute
+  '/app/docs': typeof AppDocsRoute
+  '/app/generator': typeof AppGeneratorRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/workspace': typeof AppWorkspaceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/dashboard': typeof AppDashboardRoute
-  '/diagrams': typeof AppDiagramsRoute
-  '/docs': typeof AppDocsRoute
-  '/generator': typeof AppGeneratorRoute
-  '/profile': typeof AppProfileRoute
-  '/workspace': typeof AppWorkspaceRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/diagrams': typeof AppDiagramsRoute
+  '/app/docs': typeof AppDocsRoute
+  '/app/generator': typeof AppGeneratorRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/workspace': typeof AppWorkspaceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/_app': typeof AppRouteWithChildren
+  '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_app/dashboard': typeof AppDashboardRoute
-  '/_app/diagrams': typeof AppDiagramsRoute
-  '/_app/docs': typeof AppDocsRoute
-  '/_app/generator': typeof AppGeneratorRoute
-  '/_app/profile': typeof AppProfileRoute
-  '/_app/workspace': typeof AppWorkspaceRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/diagrams': typeof AppDiagramsRoute
+  '/app/docs': typeof AppDocsRoute
+  '/app/generator': typeof AppGeneratorRoute
+  '/app/profile': typeof AppProfileRoute
+  '/app/workspace': typeof AppWorkspaceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/app'
     | '/auth'
-    | '/dashboard'
-    | '/diagrams'
-    | '/docs'
-    | '/generator'
-    | '/profile'
-    | '/workspace'
+    | '/app/dashboard'
+    | '/app/diagrams'
+    | '/app/docs'
+    | '/app/generator'
+    | '/app/profile'
+    | '/app/workspace'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/app'
     | '/auth'
-    | '/dashboard'
-    | '/diagrams'
-    | '/docs'
-    | '/generator'
-    | '/profile'
-    | '/workspace'
+    | '/app/dashboard'
+    | '/app/diagrams'
+    | '/app/docs'
+    | '/app/generator'
+    | '/app/profile'
+    | '/app/workspace'
   id:
     | '__root__'
     | '/'
-    | '/_app'
+    | '/app'
     | '/auth'
-    | '/_app/dashboard'
-    | '/_app/diagrams'
-    | '/_app/docs'
-    | '/_app/generator'
-    | '/_app/profile'
-    | '/_app/workspace'
+    | '/app/dashboard'
+    | '/app/diagrams'
+    | '/app/docs'
+    | '/app/generator'
+    | '/app/profile'
+    | '/app/workspace'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,10 +150,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -159,45 +164,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/workspace': {
-      id: '/_app/workspace'
+    '/app/workspace': {
+      id: '/app/workspace'
       path: '/workspace'
-      fullPath: '/workspace'
+      fullPath: '/app/workspace'
       preLoaderRoute: typeof AppWorkspaceRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/profile': {
-      id: '/_app/profile'
+    '/app/profile': {
+      id: '/app/profile'
       path: '/profile'
-      fullPath: '/profile'
+      fullPath: '/app/profile'
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/generator': {
-      id: '/_app/generator'
+    '/app/generator': {
+      id: '/app/generator'
       path: '/generator'
-      fullPath: '/generator'
+      fullPath: '/app/generator'
       preLoaderRoute: typeof AppGeneratorRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/docs': {
-      id: '/_app/docs'
+    '/app/docs': {
+      id: '/app/docs'
       path: '/docs'
-      fullPath: '/docs'
+      fullPath: '/app/docs'
       preLoaderRoute: typeof AppDocsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/diagrams': {
-      id: '/_app/diagrams'
+    '/app/diagrams': {
+      id: '/app/diagrams'
       path: '/diagrams'
-      fullPath: '/diagrams'
+      fullPath: '/app/diagrams'
       preLoaderRoute: typeof AppDiagramsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/dashboard': {
-      id: '/_app/dashboard'
+    '/app/dashboard': {
+      id: '/app/dashboard'
       path: '/dashboard'
-      fullPath: '/dashboard'
+      fullPath: '/app/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }

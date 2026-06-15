@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/auth";
 import { ArrowUpRight, Boxes, Code2, FileText, GitBranch, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_app/dashboard")({
+export const Route = createFileRoute("/app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — ArchAI" }] }),
   component: Dashboard,
 });

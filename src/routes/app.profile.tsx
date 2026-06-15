@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { LogOut, Save, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_app/profile")({
+export const Route = createFileRoute("/app/profile")({
   head: () => ({ meta: [{ title: "Profile — ArchAI" }] }),
   component: Profile,
 });

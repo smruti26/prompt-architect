@@ -9,7 +9,7 @@ import { Download, ZoomIn, ZoomOut, FileImage, Sparkles } from "lucide-react";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
 
-export const Route = createFileRoute("/_app/diagrams")({
+export const Route = createFileRoute("/app/diagrams")({
   head: () => ({ meta: [{ title: "Diagram Studio — ArchAI" }] }),
   component: Diagrams,
 });

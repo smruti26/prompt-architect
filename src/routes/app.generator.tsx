@@ -9,7 +9,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_app/generator")({
+export const Route = createFileRoute("/app/generator")({
   head: () => ({ meta: [{ title: "Code Generator — ArchAI" }] }),
   component: Generator,
 });

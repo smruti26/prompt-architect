@@ -9,7 +9,7 @@ import jsPDF from "jspdf";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_app/docs")({
+export const Route = createFileRoute("/app/docs")({
   head: () => ({ meta: [{ title: "Documentation Center — ArchAI" }] }),
   component: Docs,
 });

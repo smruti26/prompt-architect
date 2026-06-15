@@ -15,7 +15,7 @@ const EXAMPLES = [
   "Build a multi-tenant CRM with Spring Boot, MySQL, microservices, Kafka events, and Kubernetes.",
 ];
 
-export const Route = createFileRoute("/_app/workspace")({
+export const Route = createFileRoute("/app/workspace")({
   head: () => ({ meta: [{ title: "AI Workspace — ArchAI" }] }),
   component: Workspace,
 });
