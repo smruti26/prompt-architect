@@ -32,7 +32,7 @@ function AuthPage() {
     setLoading(false);
     if (r.ok) {
       toast.success("Welcome back");
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/app/dashboard" });
     } else {
       toast.error(r.error ?? "Login failed");
     }

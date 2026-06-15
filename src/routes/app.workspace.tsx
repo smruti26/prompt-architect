@@ -35,7 +35,7 @@ function Workspace() {
     }
     await generate(prompt, source);
     toast.success("Blueprint generated");
-    navigate({ to: "/diagrams" });
+    navigate({ to: "/app/diagrams" });
   };
 
   return (

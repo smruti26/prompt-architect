@@ -111,7 +111,7 @@ function Empty() {
           <Sparkles className="mx-auto h-8 w-8 text-primary" />
           <h2 className="font-display text-xl font-semibold">No diagrams yet</h2>
           <p className="text-sm text-muted-foreground">Generate a blueprint from the AI Workspace to populate the diagram studio.</p>
-          <Link to="/workspace"><Button>Go to AI Workspace</Button></Link>
+          <Link to="/app/workspace"><Button>Go to AI Workspace</Button></Link>
         </CardContent>
       </Card>
     </div>
