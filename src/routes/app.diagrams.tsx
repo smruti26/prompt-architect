@@ -74,7 +74,7 @@ function Diagrams() {
 
   const onReady = useCallback((api: MermaidApi) => {
     apiRef.current = api;
-    api.panZoom?.setOnZoom((z) => setZoomPct(Math.round(z * 100)));
+    try { api.panZoom?.setOnZoom?.((z) => setZoomPct(Math.round(z * 100))); } catch { /* noop */ }
     setZoomPct(Math.round((api.panZoom?.getZoom() ?? 1) * 100));
   }, []);
 
