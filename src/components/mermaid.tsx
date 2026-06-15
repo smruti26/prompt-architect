@@ -1,6 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "@/lib/theme";
-import type { Instance as PanZoomInstance } from "svg-pan-zoom";
+type PanZoomInstance = {
+  destroy: () => void;
+  resize: () => void;
+  fit: () => void;
+  center: () => void;
+  resetZoom: () => void;
+  resetPan: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  getZoom: () => number;
+  getPan: () => { x: number; y: number };
+  getSizes: () => { width: number; height: number; realZoom: number; viewBox: { x: number; y: number; width: number; height: number } };
+  zoom: (n: number) => void;
+  zoomAtPoint: (n: number, p: { x: number; y: number }) => void;
+  pan: (p: { x: number; y: number }) => void;
+  panBy: (p: { x: number; y: number }) => void;
+  setOnZoom: (fn: (z: number) => void) => void;
+  setOnPan: (fn: (p: { x: number; y: number }) => void) => void;
+};
 
 let injected = false;
 function injectMermaidStyles() {
