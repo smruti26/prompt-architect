@@ -40,8 +40,8 @@ export function DiagramMinimap({ api, refreshKey }: { api: MermaidApi | null; re
       } catch { /* noop */ }
     };
     update();
-    pz.setOnZoom(update);
-    pz.setOnPan(update);
+    try { pz.setOnZoom?.(update); } catch { /* noop */ }
+    try { pz.setOnPan?.(update); } catch { /* noop */ }
   }, [api]);
 
   if (!svgUrl) return null;
