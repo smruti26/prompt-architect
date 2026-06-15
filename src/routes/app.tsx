@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 
-export const Route = createFileRoute("/_app")({
+export const Route = createFileRoute("/app")({
   component: AppLayout,
 });
 
