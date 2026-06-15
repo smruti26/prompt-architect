@@ -56,8 +56,6 @@ function renderMarkdown(md: string) {
   return out.join("\n");
 }
 
-export default function _default() {}
-
 function Docs() {
   const { blueprint } = useBlueprint();
   const [active, setActive] = useState<DocKey>("hld");

@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import mermaid from "mermaid";
 import { useTheme } from "@/lib/theme";
-
-let initialized = false;
 
 export function Mermaid({ chart, id }: { chart: string; id: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -10,10 +7,10 @@ export function Mermaid({ chart, id }: { chart: string; id: string }) {
   const [svg, setSvg] = useState("");
 
   useEffect(() => {
-    if (!initialized) {
-      initialized = true;
-    }
-    mermaid.initialize({
+    let cancel = false;
+    (async () => {
+      const mermaid = (await import("mermaid")).default;
+      mermaid.initialize({
       startOnLoad: false,
       theme: mode === "dark" ? "dark" : "default",
       themeVariables: {
@@ -26,16 +23,14 @@ export function Mermaid({ chart, id }: { chart: string; id: string }) {
         tertiaryColor: mode === "dark" ? "#0b1228" : "#f8fafc",
       },
       securityLevel: "loose",
-    });
-    let cancel = false;
-    mermaid
-      .render(`m-${id}-${Math.random().toString(36).slice(2, 7)}`, chart)
-      .then((res) => {
-        if (!cancel) setSvg(res.svg);
-      })
-      .catch((e) => {
-        if (!cancel) setSvg(`<pre style="color:#f87171">${String(e?.message ?? e)}</pre>`);
       });
+      try {
+        const res = await mermaid.render(`m-${id}-${Math.random().toString(36).slice(2, 7)}`, chart);
+        if (!cancel) setSvg(res.svg);
+      } catch (e) {
+        if (!cancel) setSvg(`<pre style="color:#f87171">${String((e as Error)?.message ?? e)}</pre>`);
+      }
+    })();
     return () => {
       cancel = true;
     };
