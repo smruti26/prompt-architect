@@ -46,6 +46,9 @@ export function DiagramMinimap({ api, refreshKey }: { api: MermaidApi | null; re
 
   if (!svgUrl) return null;
 
+  let zoomPct = 100;
+  try { zoomPct = Math.round(((api?.panZoom?.getZoom?.() as number | undefined) ?? 1) * 100); } catch { /* noop */ }
+
   // Map viewBox coords -> percentage of minimap area.
   const pct = (v: number, off: number, span: number) => `${((v - off) / span) * 100}%`;
 
@@ -53,7 +56,7 @@ export function DiagramMinimap({ api, refreshKey }: { api: MermaidApi | null; re
     <div className="pointer-events-auto absolute bottom-4 right-4 z-10 w-48 overflow-hidden rounded-xl border border-border/60 bg-background/85 p-2 shadow-2xl backdrop-blur">
       <div className="mb-1 flex items-center justify-between text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
         <span>Minimap</span>
-        <span className="font-mono">{Math.round((api?.panZoom?.getZoom?.() ?? 1) * 100)}%</span>
+        <span className="font-mono">{zoomPct}%</span>
       </div>
       <div
         ref={wrapRef}
@@ -62,17 +65,19 @@ export function DiagramMinimap({ api, refreshKey }: { api: MermaidApi | null; re
           if (!api?.panZoom || !wrapRef.current) return;
           const wrap = wrapRef.current;
           const move = (ev: MouseEvent | React.MouseEvent) => {
-            const r = wrap.getBoundingClientRect();
-            const x = ("clientX" in ev ? ev.clientX : 0) - r.left;
-            const y = ("clientY" in ev ? ev.clientY : 0) - r.top;
-            const targetX = vb.x + (x / r.width) * vb.w;
-            const targetY = vb.y + (y / r.height) * vb.h;
-            const sizes = api.panZoom!.getSizes();
-            const realZoom = sizes.realZoom || 1;
-            api.panZoom!.pan({
-              x: -(targetX - sizes.viewBox.x - sizes.width / realZoom / 2) * realZoom,
-              y: -(targetY - sizes.viewBox.y - sizes.height / realZoom / 2) * realZoom,
-            });
+            try {
+              const r = wrap.getBoundingClientRect();
+              const x = ("clientX" in ev ? ev.clientX : 0) - r.left;
+              const y = ("clientY" in ev ? ev.clientY : 0) - r.top;
+              const targetX = vb.x + (x / r.width) * vb.w;
+              const targetY = vb.y + (y / r.height) * vb.h;
+              const sizes = api.panZoom!.getSizes();
+              const realZoom = sizes.realZoom || 1;
+              api.panZoom!.pan({
+                x: -(targetX - sizes.viewBox.x - sizes.width / realZoom / 2) * realZoom,
+                y: -(targetY - sizes.viewBox.y - sizes.height / realZoom / 2) * realZoom,
+              });
+            } catch { /* noop */ }
           };
           move(e);
           const up = () => { window.removeEventListener("mousemove", move as never); window.removeEventListener("mouseup", up); };
