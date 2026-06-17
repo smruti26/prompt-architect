@@ -2,17 +2,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Mermaid, type MermaidApi } from "@/components/mermaid";
 import { DiagramInspector } from "@/components/diagram-inspector";
 import { DiagramMinimap } from "@/components/diagram-minimap";
 import { useBlueprint } from "@/lib/blueprint-store";
 import { DIAGRAM_ORDER, type DiagramKey } from "@/lib/blueprint";
 import { LAYOUTS, applyLayout, parseDiagram, type LayoutKey } from "@/lib/diagram-parse";
+import { toast } from "sonner";
 import {
   Download, ZoomIn, ZoomOut, FileImage, Sparkles, Maximize2, Minimize2,
   Network, Component, FolderTree, Boxes, Workflow, Database, MessagesSquare, Cloud, GitBranch,
   Grid3x3, CircleDot, Sparkle, Maximize, RotateCcw, Map as MapIcon, MoveDiagonal,
-  GitFork, Share2, Brain,
+  GitFork, Share2, Brain, Search, Zap, Filter, AlertTriangle, Activity, Eye, MessageSquare,
+  Copy, Crosshair, Wand2, Layers as LayersIcon, X,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/diagrams")({
