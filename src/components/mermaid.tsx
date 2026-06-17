@@ -123,6 +123,14 @@ export function Mermaid({
   const { mode } = useTheme();
   const [svg, setSvg] = useState("");
 
+  // Keep latest callbacks in refs so the pan-zoom effect doesn't re-run
+  // every time the parent re-renders (which destroyed pan-zoom and reset
+  // the view on every click — major perf + UX regression).
+  const onNodeClickRef = useRef(onNodeClick);
+  const onReadyRef = useRef(onReady);
+  useEffect(() => { onNodeClickRef.current = onNodeClick; }, [onNodeClick]);
+  useEffect(() => { onReadyRef.current = onReady; }, [onReady]);
+
   // Render mermaid -> SVG string
   useEffect(() => {
     injectMermaidStyles();
@@ -191,7 +199,8 @@ export function Mermaid({
       const handler = (e: Event) => {
         e.stopPropagation();
         const nid = nodeIdFromDom(n.id);
-        if (nid && onNodeClick) onNodeClick(nid);
+        const cb = onNodeClickRef.current;
+        if (nid && cb) cb(nid);
       };
       n.addEventListener("click", handler);
       handlers.push(() => n.removeEventListener("click", handler));
@@ -220,7 +229,7 @@ export function Mermaid({
         dblClickZoomEnabled: false,
       });
       panZoomRef.current = panZoom;
-      onReady?.({
+      onReadyRef.current?.({
         svg: svgEl,
         panZoom,
         fit: () => { panZoom?.resize(); panZoom?.fit(); panZoom?.center(); },
@@ -236,7 +245,7 @@ export function Mermaid({
       try { panZoom?.destroy(); } catch { /* noop */ }
       panZoomRef.current = null;
     };
-  }, [svg, onNodeClick, onReady]);
+  }, [svg]);
 
   // Apply selection / highlight classes.
   useEffect(() => {
