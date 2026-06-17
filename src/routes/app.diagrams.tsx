@@ -177,6 +177,71 @@ function Diagrams() {
 
   const ActiveIcon = DIAGRAM_META[active].icon;
 
+  // ---------- AI features ----------
+  const isolatedNodes = Array.from(parsed.nodes.values()).filter((n) => {
+    const d = degree.get(n.id); return d && d.in + d.out === 0;
+  });
+  const criticalNode = (() => {
+    let top = ""; let best = -1;
+    degree.forEach((d, k) => { const s = d.in + d.out; if (s > best) { best = s; top = k; } });
+    return top;
+  })();
+
+  const aiActions = [
+    { key: "critical", icon: Crosshair, label: "Critical path", run: () => {
+        if (!criticalNode) return toast.message("No nodes");
+        setSelectedId(criticalNode);
+        toast.success(`Hot node: ${parsed.nodes.get(criticalNode)?.label}`);
+      } },
+    { key: "isolated", icon: AlertTriangle, label: "Find isolated", run: () => {
+        if (!isolatedNodes.length) return toast.success("No isolated nodes — clean graph.");
+        setSelectedId(isolatedNodes[0].id);
+        toast.warning(`${isolatedNodes.length} isolated node(s) detected`);
+      } },
+    { key: "focus", icon: Eye, label: focusMode ? "Exit focus" : "Focus selection", run: () => {
+        if (!selectedId) return toast.message("Select a node first");
+        setFocusMode((v) => !v);
+      } },
+    { key: "clear", icon: X, label: "Clear filters", run: () => {
+        setQuery(""); setFilterCls(null); setFocusMode(false); setSelectedId(null);
+        toast.success("Filters cleared");
+      } },
+    { key: "fit", icon: Wand2, label: "Smart fit", run: () => {
+        apiRef.current?.fit(); apiRef.current?.reset(); toast.success("Re-centered & fit");
+      } },
+    { key: "explain", icon: MessageSquare, label: "Explain selection", run: () => {
+        if (!selectedId) return toast.message("Select a node first");
+        const n = parsed.nodes.get(selectedId); const d = degree.get(selectedId);
+        toast(`${n?.label}: ${d?.in ?? 0} upstream, ${d?.out ?? 0} downstream`, {
+          description: n?.cls ? `Layer: ${n.cls}. Touches ${(d?.in ?? 0) + (d?.out ?? 0)} edges.` : `Touches ${(d?.in ?? 0) + (d?.out ?? 0)} edges.`,
+        });
+      } },
+    { key: "copy", icon: Copy, label: "Copy Mermaid", run: async () => {
+        try { await navigator.clipboard.writeText(chart); toast.success("Mermaid copied"); }
+        catch { toast.error("Copy failed"); }
+      } },
+    { key: "complexity", icon: Activity, label: `Score ${complexity.score}`, run: () => {
+        toast(`Complexity: ${complexity.label} (${complexity.score}/100)`, {
+          description: `${parsed.nodes.size} nodes · ${parsed.edges.length} edges`,
+        });
+      } },
+    { key: "stack", icon: LayersIcon, label: "Surface layers", run: () => {
+        if (!classes.length) return toast.message("No layers detected");
+        const next = filterCls ? null : classes[0];
+        setFilterCls(next);
+        toast.success(next ? `Showing ${next} layer` : "Showing all layers");
+      } },
+    { key: "suggest", icon: Zap, label: "AI suggestions", run: () => {
+        const tips: string[] = [];
+        if (isolatedNodes.length) tips.push(`${isolatedNodes.length} isolated nodes — consider wiring or removing.`);
+        if (complexity.score > 75) tips.push("High complexity — try splitting into sub-diagrams.");
+        const dataNodes = Array.from(parsed.nodes.values()).filter((n) => n.cls === "data").length;
+        if (dataNodes > 3) tips.push("Multiple data stores — verify ownership boundaries.");
+        if (!tips.length) tips.push("Architecture looks balanced.");
+        toast("AI Suggestions", { description: tips.join("  •  ") });
+      } },
+  ];
+
   return (
     <div className={fullscreen ? "fixed inset-0 z-50 overflow-auto bg-background p-4 md:p-6" : "mx-auto max-w-[1600px] space-y-6 p-4 md:p-8"}>
       {!fullscreen && (
