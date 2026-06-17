@@ -12,4 +12,9 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // ✅ FIX: Use Vercel preset so Nitro outputs .vercel/output/ with SSR function + static assets.
+  // Default is "cloudflare" which never runs on Vercel → 404 on all routes.
+  nitro: {
+    preset: "vercel",
+  },
 });
