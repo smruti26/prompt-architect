@@ -390,10 +390,58 @@ function Diagrams() {
               )}
             </div>
 
+            {/* AI Actions strip */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-border/60 bg-gradient-to-r from-[var(--cyan-glow)]/[0.04] via-card/20 to-[var(--violet-glow)]/[0.04] px-4 py-2.5">
+              <span className="mr-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--cyan-glow)]">
+                <Sparkles className="h-3 w-3" /> AI Actions
+              </span>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search nodes…"
+                  className="h-8 w-44 rounded-full border-border/60 bg-card/40 pl-8 text-xs"
+                />
+              </div>
+              {classes.length > 0 && (
+                <div className="hidden items-center gap-1 rounded-full border border-border/60 bg-card/40 p-1 lg:flex">
+                  <Filter className="ml-1.5 h-3 w-3 text-muted-foreground" />
+                  <button
+                    onClick={() => setFilterCls(null)}
+                    className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] transition-colors ${!filterCls ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  >All</button>
+                  {classes.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setFilterCls(filterCls === c ? null : c)}
+                      className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] transition-colors ${filterCls === c ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                    >{c}</button>
+                  ))}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {aiActions.map((a) => {
+                  const Icon = a.icon;
+                  return (
+                    <button
+                      key={a.key}
+                      onClick={a.run}
+                      title={a.label}
+                      className="group inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-2.5 py-1 text-[11px] text-muted-foreground transition-all hover:border-[var(--cyan-glow)]/50 hover:bg-[var(--cyan-glow)]/10 hover:text-foreground"
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {a.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Canvas */}
             <div
               ref={hostRef}
-              className={`relative overflow-hidden ${fullscreen ? "h-[calc(100vh-13rem)]" : "h-[640px]"}`}
+              className={`relative overflow-hidden ${fullscreen ? "h-[calc(100vh-15rem)]" : "h-[760px]"}`}
             >
               <div className={`pointer-events-none absolute inset-0 ${bg === "dotted" ? "dotted-bg opacity-30" : bg === "grid" ? "grid-bg opacity-40" : "aurora opacity-60"}`} />
               <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[var(--cyan-glow)] opacity-[0.08] blur-3xl" />
@@ -407,6 +455,7 @@ function Diagrams() {
                     onNodeClick={(nid) => setSelectedId((cur) => (cur === nid ? null : nid))}
                     selectedId={selectedId}
                     highlightIds={highlightIds}
+                    hiddenIds={hiddenIds}
                   />
                 )}
               </div>
