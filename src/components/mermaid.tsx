@@ -148,8 +148,9 @@ export function Mermaid({
         startOnLoad: false,
         theme: "base",
         fontFamily: "Inter, ui-sans-serif, system-ui",
-        flowchart: { htmlLabels: true, curve: "basis", padding: 24, nodeSpacing: 60, rankSpacing: 80, useMaxWidth: false },
-        sequence: { actorMargin: 60, messageMargin: 40, mirrorActors: false, useMaxWidth: false },
+        flowchart: { htmlLabels: true, curve: "basis", padding: 36, nodeSpacing: 90, rankSpacing: 120, useMaxWidth: false },
+        sequence: { actorMargin: 80, messageMargin: 55, mirrorActors: false, useMaxWidth: false, boxMargin: 16, noteMargin: 14, width: 180 },
+        er: { useMaxWidth: false, layoutDirection: "LR", entityPadding: 18, minEntityWidth: 140, minEntityHeight: 90 },
         themeVariables: {
           background: "transparent",
           fontFamily: "Inter, ui-sans-serif",
