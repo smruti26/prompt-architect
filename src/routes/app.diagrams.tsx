@@ -86,10 +86,11 @@ function Diagrams() {
     setSelectedId(null);
   };
 
-  const exportSvg = () => {
+  const exportSvg = async () => {
     const svg = hostRef.current?.querySelector("svg");
     if (!svg) return;
     const xml = new XMLSerializer().serializeToString(svg);
+    const { saveAs } = await import("file-saver");
     saveAs(new Blob([xml], { type: "image/svg+xml" }), `${active}-${layout}.svg`);
   };
 
@@ -109,6 +110,7 @@ function Diagrams() {
     ctx.scale(2, 2);
     ctx.drawImage(img, 0, 0, canvas.width / 2, canvas.height / 2);
     const dataUrl = canvas.toDataURL("image/png");
+    const { default: jsPDF } = await import("jspdf");
     const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [canvas.width, canvas.height] });
     pdf.addImage(dataUrl, "PNG", 0, 0, canvas.width, canvas.height);
     pdf.save(`${active}-${layout}.pdf`);
