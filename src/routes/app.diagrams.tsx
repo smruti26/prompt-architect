@@ -2,17 +2,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Mermaid, type MermaidApi } from "@/components/mermaid";
 import { DiagramInspector } from "@/components/diagram-inspector";
 import { DiagramMinimap } from "@/components/diagram-minimap";
 import { useBlueprint } from "@/lib/blueprint-store";
 import { DIAGRAM_ORDER, type DiagramKey } from "@/lib/blueprint";
 import { LAYOUTS, applyLayout, parseDiagram, type LayoutKey } from "@/lib/diagram-parse";
+import { toast } from "sonner";
 import {
   Download, ZoomIn, ZoomOut, FileImage, Sparkles, Maximize2, Minimize2,
   Network, Component, FolderTree, Boxes, Workflow, Database, MessagesSquare, Cloud, GitBranch,
   Grid3x3, CircleDot, Sparkle, Maximize, RotateCcw, Map as MapIcon, MoveDiagonal,
-  GitFork, Share2, Brain,
+  GitFork, Share2, Brain, Search, Zap, Filter, AlertTriangle, Activity, Eye, MessageSquare,
+  Copy, Crosshair, Wand2, Layers as LayersIcon, X,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/diagrams")({
@@ -51,6 +54,9 @@ function Diagrams() {
   const [showMinimap, setShowMinimap] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [zoomPct, setZoomPct] = useState(100);
+  const [query, setQuery] = useState("");
+  const [filterCls, setFilterCls] = useState<string | null>(null);
+  const [focusMode, setFocusMode] = useState(false);
   const apiRef = useRef<MermaidApi | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
@@ -70,6 +76,53 @@ function Diagrams() {
     return set;
   }, [selectedId, parsed]);
 
+  // Degree map for AI features
+  const degree = useMemo(() => {
+    const m = new Map<string, { in: number; out: number }>();
+    parsed.nodes.forEach((n) => m.set(n.id, { in: 0, out: 0 }));
+    parsed.edges.forEach((e) => {
+      const a = m.get(e.from); if (a) a.out++;
+      const b = m.get(e.to); if (b) b.in++;
+    });
+    return m;
+  }, [parsed]);
+
+  // Hidden node set from search + class filter + focus mode.
+  const hiddenIds = useMemo(() => {
+    const hidden = new Set<string>();
+    const q = query.trim().toLowerCase();
+    parsed.nodes.forEach((n) => {
+      if (q && !n.label.toLowerCase().includes(q) && !n.id.toLowerCase().includes(q)) hidden.add(n.id);
+      if (filterCls && n.cls !== filterCls) hidden.add(n.id);
+    });
+    if (focusMode && selectedId) {
+      const keep = new Set<string>([selectedId]);
+      parsed.edges.forEach((e) => {
+        if (e.from === selectedId) keep.add(e.to);
+        if (e.to === selectedId) keep.add(e.from);
+      });
+      parsed.nodes.forEach((n) => { if (!keep.has(n.id)) hidden.add(n.id); });
+    }
+    return hidden;
+  }, [query, filterCls, focusMode, selectedId, parsed]);
+
+  // Complexity score: nodes + 0.6*edges + density bonus.
+  const complexity = useMemo(() => {
+    const n = parsed.nodes.size, e = parsed.edges.length;
+    if (!n) return { score: 0, label: "—", tone: "text-muted-foreground" };
+    const raw = n + e * 0.6;
+    const score = Math.min(100, Math.round(raw * 2.2));
+    const label = score < 30 ? "Simple" : score < 60 ? "Moderate" : score < 85 ? "Complex" : "Dense";
+    const tone = score < 30 ? "text-emerald-300" : score < 60 ? "text-sky-300" : score < 85 ? "text-amber-300" : "text-rose-300";
+    return { score, label, tone };
+  }, [parsed]);
+
+  const classes = useMemo(() => {
+    const s = new Set<string>();
+    parsed.nodes.forEach((n) => { if (n.cls) s.add(n.cls); });
+    return Array.from(s);
+  }, [parsed]);
+
   const onReady = useCallback((api: MermaidApi) => {
     apiRef.current = api;
     try { api.panZoom?.setOnZoom?.((z) => setZoomPct(Math.round(z * 100))); } catch { /* noop */ }
@@ -80,6 +133,9 @@ function Diagrams() {
     setActive(key);
     setSelectedId(null);
     setZoomPct(100);
+    setQuery("");
+    setFilterCls(null);
+    setFocusMode(false);
   };
   const switchLayout = (l: LayoutKey) => {
     setLayout(l);
@@ -120,6 +176,71 @@ function Diagrams() {
   if (!blueprint) return <Empty />;
 
   const ActiveIcon = DIAGRAM_META[active].icon;
+
+  // ---------- AI features ----------
+  const isolatedNodes = Array.from(parsed.nodes.values()).filter((n) => {
+    const d = degree.get(n.id); return d && d.in + d.out === 0;
+  });
+  const criticalNode = (() => {
+    let top = ""; let best = -1;
+    degree.forEach((d, k) => { const s = d.in + d.out; if (s > best) { best = s; top = k; } });
+    return top;
+  })();
+
+  const aiActions = [
+    { key: "critical", icon: Crosshair, label: "Critical path", run: () => {
+        if (!criticalNode) return toast.message("No nodes");
+        setSelectedId(criticalNode);
+        toast.success(`Hot node: ${parsed.nodes.get(criticalNode)?.label}`);
+      } },
+    { key: "isolated", icon: AlertTriangle, label: "Find isolated", run: () => {
+        if (!isolatedNodes.length) return toast.success("No isolated nodes — clean graph.");
+        setSelectedId(isolatedNodes[0].id);
+        toast.warning(`${isolatedNodes.length} isolated node(s) detected`);
+      } },
+    { key: "focus", icon: Eye, label: focusMode ? "Exit focus" : "Focus selection", run: () => {
+        if (!selectedId) return toast.message("Select a node first");
+        setFocusMode((v) => !v);
+      } },
+    { key: "clear", icon: X, label: "Clear filters", run: () => {
+        setQuery(""); setFilterCls(null); setFocusMode(false); setSelectedId(null);
+        toast.success("Filters cleared");
+      } },
+    { key: "fit", icon: Wand2, label: "Smart fit", run: () => {
+        apiRef.current?.fit(); apiRef.current?.reset(); toast.success("Re-centered & fit");
+      } },
+    { key: "explain", icon: MessageSquare, label: "Explain selection", run: () => {
+        if (!selectedId) return toast.message("Select a node first");
+        const n = parsed.nodes.get(selectedId); const d = degree.get(selectedId);
+        toast(`${n?.label}: ${d?.in ?? 0} upstream, ${d?.out ?? 0} downstream`, {
+          description: n?.cls ? `Layer: ${n.cls}. Touches ${(d?.in ?? 0) + (d?.out ?? 0)} edges.` : `Touches ${(d?.in ?? 0) + (d?.out ?? 0)} edges.`,
+        });
+      } },
+    { key: "copy", icon: Copy, label: "Copy Mermaid", run: async () => {
+        try { await navigator.clipboard.writeText(chart); toast.success("Mermaid copied"); }
+        catch { toast.error("Copy failed"); }
+      } },
+    { key: "complexity", icon: Activity, label: `Score ${complexity.score}`, run: () => {
+        toast(`Complexity: ${complexity.label} (${complexity.score}/100)`, {
+          description: `${parsed.nodes.size} nodes · ${parsed.edges.length} edges`,
+        });
+      } },
+    { key: "stack", icon: LayersIcon, label: "Surface layers", run: () => {
+        if (!classes.length) return toast.message("No layers detected");
+        const next = filterCls ? null : classes[0];
+        setFilterCls(next);
+        toast.success(next ? `Showing ${next} layer` : "Showing all layers");
+      } },
+    { key: "suggest", icon: Zap, label: "AI suggestions", run: () => {
+        const tips: string[] = [];
+        if (isolatedNodes.length) tips.push(`${isolatedNodes.length} isolated nodes — consider wiring or removing.`);
+        if (complexity.score > 75) tips.push("High complexity — try splitting into sub-diagrams.");
+        const dataNodes = Array.from(parsed.nodes.values()).filter((n) => n.cls === "data").length;
+        if (dataNodes > 3) tips.push("Multiple data stores — verify ownership boundaries.");
+        if (!tips.length) tips.push("Architecture looks balanced.");
+        toast("AI Suggestions", { description: tips.join("  •  ") });
+      } },
+  ];
 
   return (
     <div className={fullscreen ? "fixed inset-0 z-50 overflow-auto bg-background p-4 md:p-6" : "mx-auto max-w-[1600px] space-y-6 p-4 md:p-8"}>
@@ -269,10 +390,58 @@ function Diagrams() {
               )}
             </div>
 
+            {/* AI Actions strip */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-border/60 bg-gradient-to-r from-[var(--cyan-glow)]/[0.04] via-card/20 to-[var(--violet-glow)]/[0.04] px-4 py-2.5">
+              <span className="mr-1 inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--cyan-glow)]">
+                <Sparkles className="h-3 w-3" /> AI Actions
+              </span>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search nodes…"
+                  className="h-8 w-44 rounded-full border-border/60 bg-card/40 pl-8 text-xs"
+                />
+              </div>
+              {classes.length > 0 && (
+                <div className="hidden items-center gap-1 rounded-full border border-border/60 bg-card/40 p-1 lg:flex">
+                  <Filter className="ml-1.5 h-3 w-3 text-muted-foreground" />
+                  <button
+                    onClick={() => setFilterCls(null)}
+                    className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] transition-colors ${!filterCls ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                  >All</button>
+                  {classes.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setFilterCls(filterCls === c ? null : c)}
+                      className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] transition-colors ${filterCls === c ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                    >{c}</button>
+                  ))}
+                </div>
+              )}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {aiActions.map((a) => {
+                  const Icon = a.icon;
+                  return (
+                    <button
+                      key={a.key}
+                      onClick={a.run}
+                      title={a.label}
+                      className="group inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/40 px-2.5 py-1 text-[11px] text-muted-foreground transition-all hover:border-[var(--cyan-glow)]/50 hover:bg-[var(--cyan-glow)]/10 hover:text-foreground"
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      {a.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Canvas */}
             <div
               ref={hostRef}
-              className={`relative overflow-hidden ${fullscreen ? "h-[calc(100vh-13rem)]" : "h-[640px]"}`}
+              className={`relative overflow-hidden ${fullscreen ? "h-[calc(100vh-15rem)]" : "h-[760px]"}`}
             >
               <div className={`pointer-events-none absolute inset-0 ${bg === "dotted" ? "dotted-bg opacity-30" : bg === "grid" ? "grid-bg opacity-40" : "aurora opacity-60"}`} />
               <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[var(--cyan-glow)] opacity-[0.08] blur-3xl" />
@@ -286,6 +455,7 @@ function Diagrams() {
                     onNodeClick={(nid) => setSelectedId((cur) => (cur === nid ? null : nid))}
                     selectedId={selectedId}
                     highlightIds={highlightIds}
+                    hiddenIds={hiddenIds}
                   />
                 )}
               </div>

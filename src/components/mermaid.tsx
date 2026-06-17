@@ -28,22 +28,23 @@ function injectMermaidStyles() {
   style.setAttribute("data-mermaid-enhance", "true");
   style.textContent = `
     .mermaid-host { width: 100%; height: 100%; }
-    .mermaid-host svg { width: 100% !important; height: 100% !important; max-width: none !important; font-family: "Inter", ui-sans-serif, system-ui, sans-serif !important; }
+    .mermaid-host svg { width: 100% !important; height: 100% !important; max-width: none !important; font-family: "Geist", "Inter", ui-sans-serif, system-ui, sans-serif !important; }
     .mermaid-host .node { cursor: pointer; }
     .mermaid-host .node rect,
     .mermaid-host .node polygon,
     .mermaid-host .node circle,
     .mermaid-host .node ellipse,
     .mermaid-host .node path {
-      filter: drop-shadow(0 6px 14px rgba(8, 12, 30, 0.35));
+      filter: drop-shadow(0 10px 22px rgba(8, 12, 30, 0.45));
       transition: filter .25s ease, transform .25s ease;
+      stroke-width: 2px !important;
     }
     .mermaid-host .node:hover rect,
     .mermaid-host .node:hover polygon,
     .mermaid-host .node:hover circle,
     .mermaid-host .node:hover ellipse,
     .mermaid-host .node:hover path {
-      filter: drop-shadow(0 12px 28px rgba(34, 211, 238, 0.55));
+      filter: drop-shadow(0 16px 36px rgba(34, 211, 238, 0.6));
     }
     .mermaid-host .node.archai-selected rect,
     .mermaid-host .node.archai-selected polygon,
@@ -51,36 +52,41 @@ function injectMermaidStyles() {
     .mermaid-host .node.archai-selected ellipse,
     .mermaid-host .node.archai-selected path {
       stroke: #22d3ee !important;
-      stroke-width: 3px !important;
+      stroke-width: 3.5px !important;
       filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.85)) drop-shadow(0 0 24px rgba(167, 139, 250, 0.55));
     }
-    .mermaid-host .node.archai-dim { opacity: 0.35; transition: opacity .2s ease; }
-    .mermaid-host .edgePath.archai-dim { opacity: 0.18; }
+    .mermaid-host .node.archai-dim { opacity: 0.22; transition: opacity .2s ease; }
+    .mermaid-host .edgePath.archai-dim { opacity: 0.1; }
+    .mermaid-host .node.archai-hidden { display: none; }
+    .mermaid-host .edgePath.archai-hidden { display: none; }
     .mermaid-host .edgePath.archai-highlight .path {
       stroke: #22d3ee !important;
-      stroke-width: 2.5px !important;
+      stroke-width: 3px !important;
       filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.7));
     }
     .mermaid-host .nodeLabel,
     .mermaid-host .edgeLabel,
-    .mermaid-host text { font-weight: 600 !important; letter-spacing: -0.01em; }
+    .mermaid-host text { font-weight: 600 !important; letter-spacing: -0.01em; font-size: 15px !important; }
+    .mermaid-host .nodeLabel { font-size: 15px !important; }
     .mermaid-host .edgeLabel { background: transparent !important; }
     .mermaid-host .edgeLabel rect { fill: rgba(15, 23, 42, .85) !important; rx: 6; }
+    .mermaid-host .edgeLabel .labelBkg { fill: rgba(15,23,42,.85) !important; rx: 6; }
+    .mermaid-host .edgeLabel text { font-size: 12px !important; }
     .mermaid-host .edgePath .path {
-      stroke-width: 1.75px !important;
+      stroke-width: 2px !important;
       stroke-dasharray: 6 6;
       animation: dashflow 1.4s linear infinite;
-      filter: drop-shadow(0 0 4px rgba(34, 211, 238, .35));
+      filter: drop-shadow(0 0 6px rgba(34, 211, 238, .4));
     }
     .mermaid-host .flowchart-link { stroke-linecap: round; }
     .mermaid-host .cluster rect {
-      rx: 16; ry: 16;
+      rx: 20; ry: 20;
       stroke-dasharray: 4 5;
-      stroke-width: 1px !important;
+      stroke-width: 1.25px !important;
     }
     .mermaid-host .cluster .cluster-label .nodeLabel,
     .mermaid-host .cluster-label text {
-      font-size: 11px !important; opacity: .75; text-transform: uppercase; letter-spacing: .14em;
+      font-size: 12px !important; opacity: .8; text-transform: uppercase; letter-spacing: .16em; font-weight: 700 !important;
     }
     @keyframes dashflow { to { stroke-dashoffset: -120; } }
     .mermaid-host marker path { fill: var(--color-cyan-glow, #22d3ee) !important; stroke: none !important; }
@@ -110,6 +116,7 @@ export function Mermaid({
   onReady,
   selectedId,
   highlightIds,
+  hiddenIds,
 }: {
   chart: string;
   id: string;
@@ -117,6 +124,7 @@ export function Mermaid({
   onReady?: (api: MermaidApi) => void;
   selectedId?: string | null;
   highlightIds?: Set<string>;
+  hiddenIds?: Set<string>;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const panZoomRef = useRef<PanZoomInstance | null>(null);
@@ -142,8 +150,9 @@ export function Mermaid({
         startOnLoad: false,
         theme: "base",
         fontFamily: "Inter, ui-sans-serif, system-ui",
-        flowchart: { htmlLabels: true, curve: "basis", padding: 24, nodeSpacing: 60, rankSpacing: 80, useMaxWidth: false },
-        sequence: { actorMargin: 60, messageMargin: 40, mirrorActors: false, useMaxWidth: false },
+        flowchart: { htmlLabels: true, curve: "basis", padding: 36, nodeSpacing: 90, rankSpacing: 120, useMaxWidth: false },
+        sequence: { actorMargin: 80, messageMargin: 55, mirrorActors: false, useMaxWidth: false, boxMargin: 16, noteMargin: 14, width: 180 },
+        er: { useMaxWidth: false, layoutDirection: "LR", entityPadding: 18, minEntityWidth: 140, minEntityHeight: 90 },
         themeVariables: {
           background: "transparent",
           fontFamily: "Inter, ui-sans-serif",
@@ -254,8 +263,23 @@ export function Mermaid({
     if (!svgEl) return;
     const nodes = Array.from(svgEl.querySelectorAll<SVGGElement>("g.node"));
     const edges = Array.from(svgEl.querySelectorAll<SVGGElement>("g.edgePath, path.flowchart-link"));
-    nodes.forEach((n) => { n.classList.remove("archai-selected", "archai-dim"); });
-    edges.forEach((e) => { e.classList.remove("archai-highlight", "archai-dim"); });
+    nodes.forEach((n) => { n.classList.remove("archai-selected", "archai-dim", "archai-hidden"); });
+    edges.forEach((e) => { e.classList.remove("archai-highlight", "archai-dim", "archai-hidden"); });
+    if (hiddenIds && hiddenIds.size) {
+      nodes.forEach((n) => {
+        const nid = nodeIdFromDom(n.id);
+        if (nid && hiddenIds.has(nid)) n.classList.add("archai-hidden");
+      });
+      edges.forEach((e) => {
+        const cls = (e.getAttribute("class") || "") + " " + (e.id || "");
+        for (const id of hiddenIds) {
+          if (cls.includes(`-${id}-`) || cls.includes(`LS-${id}`) || cls.includes(`LE-${id}`)) {
+            e.classList.add("archai-hidden");
+            break;
+          }
+        }
+      });
+    }
     if (!selectedId) return;
     const hi = highlightIds ?? new Set([selectedId]);
     nodes.forEach((n) => {
@@ -272,7 +296,7 @@ export function Mermaid({
       if (touchesSelected) e.classList.add("archai-highlight");
       else e.classList.add("archai-dim");
     });
-  }, [selectedId, highlightIds, svg]);
+  }, [selectedId, highlightIds, hiddenIds, svg]);
 
   return <div ref={hostRef} className="mermaid-host" dangerouslySetInnerHTML={{ __html: svg }} />;
 }
