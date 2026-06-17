@@ -15,7 +15,7 @@ import {
   Network, Component, FolderTree, Boxes, Workflow, Database, MessagesSquare, Cloud, GitBranch,
   Grid3x3, CircleDot, Sparkle, Maximize, RotateCcw, Map as MapIcon, MoveDiagonal,
   GitFork, Share2, Brain, Search, Zap, Filter, AlertTriangle, Activity, Eye, MessageSquare,
-  Copy, Crosshair, Wand2, Layers as LayersIcon, X,
+  Copy, Crosshair, Wand2, Layers as LayersIcon, X, PanelRightOpen, PanelRightClose, ChevronDown,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/diagrams")({
