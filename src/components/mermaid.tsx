@@ -116,6 +116,7 @@ export function Mermaid({
   onReady,
   selectedId,
   highlightIds,
+  hiddenIds,
 }: {
   chart: string;
   id: string;
@@ -123,6 +124,7 @@ export function Mermaid({
   onReady?: (api: MermaidApi) => void;
   selectedId?: string | null;
   highlightIds?: Set<string>;
+  hiddenIds?: Set<string>;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const panZoomRef = useRef<PanZoomInstance | null>(null);
@@ -261,8 +263,23 @@ export function Mermaid({
     if (!svgEl) return;
     const nodes = Array.from(svgEl.querySelectorAll<SVGGElement>("g.node"));
     const edges = Array.from(svgEl.querySelectorAll<SVGGElement>("g.edgePath, path.flowchart-link"));
-    nodes.forEach((n) => { n.classList.remove("archai-selected", "archai-dim"); });
-    edges.forEach((e) => { e.classList.remove("archai-highlight", "archai-dim"); });
+    nodes.forEach((n) => { n.classList.remove("archai-selected", "archai-dim", "archai-hidden"); });
+    edges.forEach((e) => { e.classList.remove("archai-highlight", "archai-dim", "archai-hidden"); });
+    if (hiddenIds && hiddenIds.size) {
+      nodes.forEach((n) => {
+        const nid = nodeIdFromDom(n.id);
+        if (nid && hiddenIds.has(nid)) n.classList.add("archai-hidden");
+      });
+      edges.forEach((e) => {
+        const cls = (e.getAttribute("class") || "") + " " + (e.id || "");
+        for (const id of hiddenIds) {
+          if (cls.includes(`-${id}-`) || cls.includes(`LS-${id}`) || cls.includes(`LE-${id}`)) {
+            e.classList.add("archai-hidden");
+            break;
+          }
+        }
+      });
+    }
     if (!selectedId) return;
     const hi = highlightIds ?? new Set([selectedId]);
     nodes.forEach((n) => {
@@ -279,7 +296,7 @@ export function Mermaid({
       if (touchesSelected) e.classList.add("archai-highlight");
       else e.classList.add("archai-dim");
     });
-  }, [selectedId, highlightIds, svg]);
+  }, [selectedId, highlightIds, hiddenIds, svg]);
 
   return <div ref={hostRef} className="mermaid-host" dangerouslySetInnerHTML={{ __html: svg }} />;
 }
