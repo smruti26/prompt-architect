@@ -13,9 +13,9 @@ import { toast } from "sonner";
 import {
   Download, ZoomIn, ZoomOut, FileImage, Sparkles, Maximize2, Minimize2,
   Network, Component, FolderTree, Boxes, Workflow, Database, MessagesSquare, Cloud, GitBranch,
-  Grid3x3, CircleDot, Sparkle, Maximize, RotateCcw, Map as MapIcon, MoveDiagonal,
+  Grid3x3, CircleDot, Maximize, RotateCcw, Map as MapIcon, MoveDiagonal,
   GitFork, Share2, Brain, Search, Zap, Filter, AlertTriangle, Activity, Eye, MessageSquare,
-  Copy, Crosshair, Wand2, Layers as LayersIcon, X, PanelRightOpen, PanelRightClose, ChevronDown,
+  Copy, Crosshair, Wand2, Layers as LayersIcon, X, PanelRightOpen, PanelRightClose,
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/diagrams")({
