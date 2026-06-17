@@ -14,8 +14,6 @@ import {
   Grid3x3, CircleDot, Sparkle, Maximize, RotateCcw, Map as MapIcon, MoveDiagonal,
   GitFork, Share2, Brain,
 } from "lucide-react";
-import { saveAs } from "file-saver";
-import jsPDF from "jspdf";
 
 export const Route = createFileRoute("/app/diagrams")({
   head: () => ({ meta: [{ title: "Diagram Studio — ArchAI" }] }),
