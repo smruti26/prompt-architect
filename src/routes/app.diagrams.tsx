@@ -57,6 +57,7 @@ function Diagrams() {
   const [query, setQuery] = useState("");
   const [filterCls, setFilterCls] = useState<string | null>(null);
   const [focusMode, setFocusMode] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
   const apiRef = useRef<MermaidApi | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
@@ -241,8 +242,6 @@ function Diagrams() {
         toast("AI Suggestions", { description: tips.join("  •  ") });
       } },
   ];
-
-  const [inspectorOpen, setInspectorOpen] = useState(true);
 
   return (
     <div className={fullscreen ? "fixed inset-0 z-50 flex flex-col bg-background" : "flex h-[calc(100vh-2rem)] flex-col"}>
