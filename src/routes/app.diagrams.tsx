@@ -54,6 +54,9 @@ function Diagrams() {
   const [showMinimap, setShowMinimap] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [zoomPct, setZoomPct] = useState(100);
+  const [query, setQuery] = useState("");
+  const [filterCls, setFilterCls] = useState<string | null>(null);
+  const [focusMode, setFocusMode] = useState(false);
   const apiRef = useRef<MermaidApi | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +76,53 @@ function Diagrams() {
     return set;
   }, [selectedId, parsed]);
 
+  // Degree map for AI features
+  const degree = useMemo(() => {
+    const m = new Map<string, { in: number; out: number }>();
+    parsed.nodes.forEach((n) => m.set(n.id, { in: 0, out: 0 }));
+    parsed.edges.forEach((e) => {
+      const a = m.get(e.from); if (a) a.out++;
+      const b = m.get(e.to); if (b) b.in++;
+    });
+    return m;
+  }, [parsed]);
+
+  // Hidden node set from search + class filter + focus mode.
+  const hiddenIds = useMemo(() => {
+    const hidden = new Set<string>();
+    const q = query.trim().toLowerCase();
+    parsed.nodes.forEach((n) => {
+      if (q && !n.label.toLowerCase().includes(q) && !n.id.toLowerCase().includes(q)) hidden.add(n.id);
+      if (filterCls && n.cls !== filterCls) hidden.add(n.id);
+    });
+    if (focusMode && selectedId) {
+      const keep = new Set<string>([selectedId]);
+      parsed.edges.forEach((e) => {
+        if (e.from === selectedId) keep.add(e.to);
+        if (e.to === selectedId) keep.add(e.from);
+      });
+      parsed.nodes.forEach((n) => { if (!keep.has(n.id)) hidden.add(n.id); });
+    }
+    return hidden;
+  }, [query, filterCls, focusMode, selectedId, parsed]);
+
+  // Complexity score: nodes + 0.6*edges + density bonus.
+  const complexity = useMemo(() => {
+    const n = parsed.nodes.size, e = parsed.edges.length;
+    if (!n) return { score: 0, label: "—", tone: "text-muted-foreground" };
+    const raw = n + e * 0.6;
+    const score = Math.min(100, Math.round(raw * 2.2));
+    const label = score < 30 ? "Simple" : score < 60 ? "Moderate" : score < 85 ? "Complex" : "Dense";
+    const tone = score < 30 ? "text-emerald-300" : score < 60 ? "text-sky-300" : score < 85 ? "text-amber-300" : "text-rose-300";
+    return { score, label, tone };
+  }, [parsed]);
+
+  const classes = useMemo(() => {
+    const s = new Set<string>();
+    parsed.nodes.forEach((n) => { if (n.cls) s.add(n.cls); });
+    return Array.from(s);
+  }, [parsed]);
+
   const onReady = useCallback((api: MermaidApi) => {
     apiRef.current = api;
     try { api.panZoom?.setOnZoom?.((z) => setZoomPct(Math.round(z * 100))); } catch { /* noop */ }
@@ -83,6 +133,9 @@ function Diagrams() {
     setActive(key);
     setSelectedId(null);
     setZoomPct(100);
+    setQuery("");
+    setFilterCls(null);
+    setFocusMode(false);
   };
   const switchLayout = (l: LayoutKey) => {
     setLayout(l);
