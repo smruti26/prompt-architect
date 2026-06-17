@@ -1,0 +1,6 @@
+{
+  "buildCommand": "NODE_OPTIONS=--max-old-space-size=4096 npm run build",
+  "outputDirectory": ".vercel/output",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": null
+}
