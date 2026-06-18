@@ -21,6 +21,7 @@ import {
   explainDiagram, suggestShapes, docsFromDiagram,
 } from "@/lib/api/diagram-ai.functions";
 import { PENDING_TEMPLATE_KEY, type PendingTemplatePayload } from "@/lib/templates/marketplace";
+import { trackEvent } from "@/lib/templates/marketplace-store";
 
 export const Route = createFileRoute("/app/studio")({
   head: () => ({ meta: [{ title: "AI Diagram Studio · ArchAI" }] }),
@@ -106,6 +107,15 @@ function StudioPage() {
           .then((res) => {
             setMermaid(res.mermaid);
             saveSnapshot(res.mermaid, payload.type as DType, payload.prompt);
+            if (payload.id) {
+              trackEvent({
+                templateId: payload.id,
+                name: payload.name,
+                category: payload.category ?? "software-architecture",
+                type: payload.type,
+                kind: "generate",
+              });
+            }
             toast.success("Diagram generated");
           })
           .catch((e: unknown) => toast.error((e as Error).message))
