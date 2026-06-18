@@ -150,7 +150,7 @@ function TemplateDetail() {
             </Button>
           </div>
           <div className="min-h-[400px] flex-1 overflow-hidden rounded-xl border bg-background/40">
-            <Mermaid chart={preview} className="h-full w-full" />
+            <Mermaid chart={preview} id={`tpl-${t.id}`} />
           </div>
         </div>
 
