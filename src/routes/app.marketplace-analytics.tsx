@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { CATEGORIES, type TemplateCategoryId } from "@/lib/templates/marketplace";
+import { CATEGORIES } from "@/lib/templates/marketplace";
 import {
   clearEvents, getAnalyticsSummary, type AnalyticsSummary,
 } from "@/lib/templates/marketplace-store";
@@ -241,7 +241,3 @@ function Pill({ label, v }: { label: string; v: number }) {
     </div>
   );
 }
-
-// Used to satisfy TS for cat unused destructure when none of TemplateCategoryId
-// is matched in the loop above.
-export type _Touch = TemplateCategoryId;
