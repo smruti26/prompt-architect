@@ -156,7 +156,7 @@ function MarketplacePage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-2rem)] flex-col">
+    <div className="flex min-h-full flex-col gap-0 p-4">
       {/* Hero */}
       <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-violet-500/10 via-background to-cyan-500/5 px-6 py-6">
         <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-3xl" />
@@ -321,7 +321,7 @@ function MarketplacePage() {
         </div>
       </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-3 overflow-auto pb-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="mt-3 grid grid-cols-1 gap-3 pb-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visible.map((t) => (
           <TemplateCard
             key={t.id}

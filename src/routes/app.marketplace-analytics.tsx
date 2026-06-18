@@ -47,7 +47,7 @@ function AnalyticsPage() {
   const empty = totals.views + totals.launches + totals.generates === 0;
 
   return (
-    <div className="flex h-[calc(100vh-2rem)] flex-col">
+    <div className="flex min-h-full flex-col gap-4 p-4">
       <div className="flex flex-wrap items-end justify-between gap-3 rounded-2xl border bg-gradient-to-br from-sky-500/10 via-background to-violet-500/5 px-6 py-5">
         <div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
