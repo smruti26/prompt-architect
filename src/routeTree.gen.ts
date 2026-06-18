@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
 import { Route as AppStudioRouteImport } from './routes/app.studio'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppMarketplaceRouteImport } from './routes/app.marketplace'
 import { Route as AppGeneratorRouteImport } from './routes/app.generator'
 import { Route as AppDocsRouteImport } from './routes/app.docs'
 import { Route as AppDiagramsRouteImport } from './routes/app.diagrams'
@@ -50,6 +51,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMarketplaceRoute = AppMarketplaceRouteImport.update({
+  id: '/marketplace',
+  path: '/marketplace',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGeneratorRoute = AppGeneratorRouteImport.update({
   id: '/generator',
   path: '/generator',
@@ -79,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
+  '/app/marketplace': typeof AppMarketplaceRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
+  '/app/marketplace': typeof AppMarketplaceRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
+  '/app/marketplace': typeof AppMarketplaceRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
+    | '/app/marketplace'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
+    | '/app/marketplace'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
+    | '/app/marketplace'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -197,6 +209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/marketplace': {
+      id: '/app/marketplace'
+      path: '/marketplace'
+      fullPath: '/app/marketplace'
+      preLoaderRoute: typeof AppMarketplaceRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/generator': {
       id: '/app/generator'
       path: '/generator'
@@ -233,6 +252,7 @@ interface AppRouteChildren {
   AppDiagramsRoute: typeof AppDiagramsRoute
   AppDocsRoute: typeof AppDocsRoute
   AppGeneratorRoute: typeof AppGeneratorRoute
+  AppMarketplaceRoute: typeof AppMarketplaceRoute
   AppProfileRoute: typeof AppProfileRoute
   AppStudioRoute: typeof AppStudioRoute
   AppWorkspaceRoute: typeof AppWorkspaceRoute
@@ -243,6 +263,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDiagramsRoute: AppDiagramsRoute,
   AppDocsRoute: AppDocsRoute,
   AppGeneratorRoute: AppGeneratorRoute,
+  AppMarketplaceRoute: AppMarketplaceRoute,
   AppProfileRoute: AppProfileRoute,
   AppStudioRoute: AppStudioRoute,
   AppWorkspaceRoute: AppWorkspaceRoute,

@@ -20,6 +20,7 @@ import {
   generateDiagram, optimizeDiagram, codeToDiagram, repoToDiagram,
   explainDiagram, suggestShapes, docsFromDiagram,
 } from "@/lib/api/diagram-ai.functions";
+import { PENDING_TEMPLATE_KEY, type PendingTemplatePayload } from "@/lib/templates/marketplace";
 
 export const Route = createFileRoute("/app/studio")({
   head: () => ({ meta: [{ title: "AI Diagram Studio · ArchAI" }] }),
@@ -86,6 +87,32 @@ function StudioPage() {
       const raw = localStorage.getItem("studio.history");
       if (raw) setHistory(JSON.parse(raw));
     } catch { /* noop */ }
+  }, []);
+
+  // Load template handed off from the marketplace
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(PENDING_TEMPLATE_KEY);
+      if (!raw) return;
+      sessionStorage.removeItem(PENDING_TEMPLATE_KEY);
+      const payload = JSON.parse(raw) as PendingTemplatePayload;
+      setPrompt(payload.prompt);
+      setType(payload.type as DType);
+      setTab("prompt");
+      toast.success(`Template loaded: ${payload.name}`);
+      if (payload.autorun) {
+        setLoading("generate");
+        genFn({ data: { prompt: payload.prompt, type: payload.type as DType } })
+          .then((res) => {
+            setMermaid(res.mermaid);
+            saveSnapshot(res.mermaid, payload.type as DType, payload.prompt);
+            toast.success("Diagram generated");
+          })
+          .catch((e: unknown) => toast.error((e as Error).message))
+          .finally(() => setLoading(null));
+      }
+    } catch { /* noop */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const saveSnapshot = useCallback((m: string, t: DType, p: string) => {
