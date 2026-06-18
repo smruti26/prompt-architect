@@ -18,6 +18,7 @@ import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppMarketplaceAnalyticsRouteImport } from './routes/app.marketplace-analytics'
 import { Route as AppMarketplaceRouteImport } from './routes/app.marketplace'
 import { Route as AppGeneratorRouteImport } from './routes/app.generator'
+import { Route as AppDocsRouteImport } from './routes/app.docs'
 import { Route as AppDiagramsRouteImport } from './routes/app.diagrams'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppTemplateIdRouteImport } from './routes/app.template.$id'
@@ -67,6 +68,11 @@ const AppGeneratorRoute = AppGeneratorRouteImport.update({
   path: '/generator',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDocsRoute = AppDocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDiagramsRoute = AppDiagramsRouteImport.update({
   id: '/diagrams',
   path: '/diagrams',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/diagrams': typeof AppDiagramsRoute
+  '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/diagrams': typeof AppDiagramsRoute
+  '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/app/dashboard': typeof AppDashboardRoute
   '/app/diagrams': typeof AppDiagramsRoute
+  '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/app/dashboard'
     | '/app/diagrams'
+    | '/app/docs'
     | '/app/generator'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/app/dashboard'
     | '/app/diagrams'
+    | '/app/docs'
     | '/app/generator'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/app/dashboard'
     | '/app/diagrams'
+    | '/app/docs'
     | '/app/generator'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
@@ -242,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGeneratorRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/docs': {
+      id: '/app/docs'
+      path: '/docs'
+      fullPath: '/app/docs'
+      preLoaderRoute: typeof AppDocsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/diagrams': {
       id: '/app/diagrams'
       path: '/diagrams'
@@ -269,6 +288,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDiagramsRoute: typeof AppDiagramsRoute
+  AppDocsRoute: typeof AppDocsRoute
   AppGeneratorRoute: typeof AppGeneratorRoute
   AppMarketplaceRoute: typeof AppMarketplaceRoute
   AppMarketplaceAnalyticsRoute: typeof AppMarketplaceAnalyticsRoute
@@ -281,6 +301,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDiagramsRoute: AppDiagramsRoute,
+  AppDocsRoute: AppDocsRoute,
   AppGeneratorRoute: AppGeneratorRoute,
   AppMarketplaceRoute: AppMarketplaceRoute,
   AppMarketplaceAnalyticsRoute: AppMarketplaceAnalyticsRoute,
