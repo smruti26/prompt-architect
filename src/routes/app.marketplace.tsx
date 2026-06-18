@@ -130,7 +130,7 @@ function MarketplacePage() {
   }, [visible]);
 
   const launch = (t: MarketplaceTemplate, autorun: boolean) => {
-    const payload: PendingTemplatePayload = { prompt: t.prompt, type: t.type, name: t.name, autorun };
+    const payload: PendingTemplatePayload = { prompt: t.prompt, type: t.type, name: t.name, autorun, id: t.id, category: t.category };
     try { sessionStorage.setItem(PENDING_TEMPLATE_KEY, JSON.stringify(payload)); } catch { /* noop */ }
     trackEvent({ templateId: t.id, name: t.name, category: t.category, type: t.type, kind: "launch" });
     toast.success(`Loaded "${t.name}" into Studio`);
