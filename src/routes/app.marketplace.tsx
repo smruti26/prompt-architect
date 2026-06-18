@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, memo } from "react";
 import {
   Search, Sparkles, Wand2, Star, Crown, Flame, Filter, TrendingUp,
   Boxes, Workflow, ListTree, Brain, Database, GitBranch, Network,
@@ -66,6 +66,7 @@ function MarketplacePage() {
   const counts = useMemo(() => getCategoryCounts(), []);
 
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [activeCategory, setActiveCategory] = useState<TemplateCategoryId | "all">("all");
   const [activeType, setActiveType] = useState<TemplateType | "all">("all");
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("all");
@@ -78,6 +79,7 @@ function MarketplacePage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [newCollectionName, setNewCollectionName] = useState("");
   const viewLogged = useRef<Set<string>>(new Set());
+  const [visibleCount, setVisibleCount] = useState(48);
 
   useEffect(() => {
     const refreshFavs = () => setFavorites(getFavorites());
@@ -92,7 +94,7 @@ function MarketplacePage() {
   }, []);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     let list = all.filter((t) => {
       if (activeCategory !== "all" && t.category !== activeCategory) return false;
       if (activeType !== "all" && t.type !== activeType) return false;
@@ -115,18 +117,29 @@ function MarketplacePage() {
       return a.name.localeCompare(b.name);
     });
     return list;
-  }, [all, query, activeCategory, activeType, difficulty, sort, proOnly, newOnly, favOnly, favorites, activeCollection, collections]);
+  }, [all, deferredQuery, activeCategory, activeType, difficulty, sort, proOnly, newOnly, favOnly, favorites, activeCollection, collections]);
 
-  const visible = filtered.slice(0, 120);
+  // Reset pagination whenever the filtered set changes shape.
+  useEffect(() => { setVisibleCount(48); }, [deferredQuery, activeCategory, activeType, difficulty, sort, proOnly, newOnly, favOnly, activeCollection]);
+  const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
+  const favSet = useMemo(() => new Set(favorites), [favorites]);
 
-  // Log a single view event per template per session as it appears in the list.
+  // Log view events lazily so we don't write to localStorage for every render.
+  // We only sample the first 24 cards and defer the work to idle time.
   useEffect(() => {
-    for (const t of visible) {
-      if (!viewLogged.current.has(t.id)) {
+    const sample = visible.slice(0, 24);
+    const fresh = sample.filter((t) => !viewLogged.current.has(t.id));
+    if (fresh.length === 0) return;
+    type IdleApi = { requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number };
+    const w = window as unknown as IdleApi;
+    const run = () => {
+      for (const t of fresh) {
         viewLogged.current.add(t.id);
         trackEvent({ templateId: t.id, name: t.name, category: t.category, type: t.type, kind: "view" });
       }
-    }
+    };
+    if (typeof w.requestIdleCallback === "function") w.requestIdleCallback(run, { timeout: 2000 });
+    else setTimeout(run, 300);
   }, [visible]);
 
   const launch = (t: MarketplaceTemplate, autorun: boolean) => {
