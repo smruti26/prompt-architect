@@ -67,7 +67,7 @@ function TemplateDetail() {
   }, [t.id, t.name, t.category, t.type]);
 
   const handleLaunch = (autorun: boolean) => {
-    const payload: PendingTemplatePayload = { prompt: t.prompt, type: t.type, name: t.name, autorun };
+    const payload: PendingTemplatePayload = { prompt: t.prompt, type: t.type, name: t.name, autorun, id: t.id, category: t.category };
     try { sessionStorage.setItem(PENDING_TEMPLATE_KEY, JSON.stringify(payload)); } catch { /* noop */ }
     trackEvent({ templateId: t.id, name: t.name, category: t.category, type: t.type, kind: "launch" });
     toast.success(autorun ? "Auto-generating in Studio..." : "Loaded in Studio");
