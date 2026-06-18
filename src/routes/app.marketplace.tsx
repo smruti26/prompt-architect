@@ -440,7 +440,7 @@ const TemplateCard = memo(function TemplateCard({
       </div>
     </div>
   );
-}
+});
 
 function CollectionsBar({
   collections, active, onSelect, onCreate, onDelete, name, onName,
