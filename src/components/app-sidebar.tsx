@@ -22,6 +22,7 @@ import {
   LogOut,
   Wand2,
   Store,
+  BarChart3,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "./logo";
@@ -32,6 +33,7 @@ const items = [
   { title: "AI Workspace", url: "/app/workspace", icon: Sparkles },
   { title: "AI Diagram Studio", url: "/app/studio", icon: Wand2 },
   { title: "Template Marketplace", url: "/app/marketplace", icon: Store },
+  { title: "Marketplace Analytics", url: "/app/marketplace-analytics", icon: BarChart3 },
   { title: "Diagram Studio", url: "/app/diagrams", icon: GitBranch },
   { title: "Code Generator", url: "/app/generator", icon: Code2 },
   { title: "Documentation", url: "/app/docs", icon: FileText },
