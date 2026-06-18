@@ -352,4 +352,6 @@ export interface PendingTemplatePayload {
   type: TemplateType;
   name: string;
   autorun?: boolean;
+  id?: string;
+  category?: TemplateCategoryId;
 }
