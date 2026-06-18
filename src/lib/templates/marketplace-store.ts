@@ -46,41 +46,90 @@ function write<T>(key: string, value: T) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* noop */ }
 }
 
+// ---- In-memory caches so we don't re-parse localStorage on every call ----
+// Reading 5000 events + JSON.parse on every render / per-card was the main
+// perf bottleneck in the marketplace. We cache aggressively and flush writes
+// in idle batches.
+let _eventsCache: TemplateEvent[] | null = null;
+let _favsCache: string[] | null = null;
+let _collectionsCache: Collection[] | null = null;
+let _eventsDirty = false;
+let _flushScheduled = false;
+
+function loadEvents(): TemplateEvent[] {
+  if (_eventsCache) return _eventsCache;
+  _eventsCache = read<TemplateEvent[]>(EVENTS_KEY, []);
+  return _eventsCache;
+}
+function loadFavs(): string[] {
+  if (_favsCache) return _favsCache;
+  _favsCache = read<string[]>(FAVS_KEY, []);
+  return _favsCache;
+}
+function loadCollections(): Collection[] {
+  if (_collectionsCache) return _collectionsCache;
+  _collectionsCache = read<Collection[]>(COLLECTIONS_KEY, []);
+  return _collectionsCache;
+}
+function scheduleFlush() {
+  if (_flushScheduled || !isBrowser()) return;
+  _flushScheduled = true;
+  const run = () => {
+    _flushScheduled = false;
+    if (_eventsDirty && _eventsCache) {
+      const trimmed = _eventsCache.length > 5000
+        ? _eventsCache.slice(-5000)
+        : _eventsCache;
+      _eventsCache = trimmed;
+      write(EVENTS_KEY, trimmed);
+      _eventsDirty = false;
+    }
+  };
+  type IdleApi = { requestIdleCallback?: (cb: () => void, opts?: { timeout?: number }) => number };
+  const w = window as unknown as IdleApi;
+  if (typeof w.requestIdleCallback === "function") {
+    w.requestIdleCallback(run, { timeout: 1500 });
+  } else {
+    setTimeout(run, 250);
+  }
+}
+
 // ----- Events / analytics -----
 
 export function trackEvent(e: Omit<TemplateEvent, "id" | "ts">) {
   if (!isBrowser()) return;
-  const list = read<TemplateEvent[]>(EVENTS_KEY, []);
+  const list = loadEvents();
   list.push({ ...e, id: crypto.randomUUID(), ts: Date.now() });
-  // cap at 5000 most-recent events
-  const trimmed = list.length > 5000 ? list.slice(-5000) : list;
-  write(EVENTS_KEY, trimmed);
-  try { window.dispatchEvent(new CustomEvent("marketplace:events")); } catch { /* noop */ }
+  _eventsDirty = true;
+  scheduleFlush();
 }
 
 export function getEvents(): TemplateEvent[] {
-  return read<TemplateEvent[]>(EVENTS_KEY, []);
+  return loadEvents();
 }
 
 export function clearEvents() {
-  write(EVENTS_KEY, []);
+  _eventsCache = [];
+  _eventsDirty = true;
+  scheduleFlush();
   try { window.dispatchEvent(new CustomEvent("marketplace:events")); } catch { /* noop */ }
 }
 
 // ----- Favorites -----
 
 export function getFavorites(): string[] {
-  return read<string[]>(FAVS_KEY, []);
+  return loadFavs();
 }
 
 export function isFavorite(id: string): boolean {
-  return getFavorites().includes(id);
+  return loadFavs().includes(id);
 }
 
 export function toggleFavorite(id: string): boolean {
-  const favs = getFavorites();
+  const favs = [...loadFavs()];
   const idx = favs.indexOf(id);
   if (idx >= 0) favs.splice(idx, 1); else favs.unshift(id);
+  _favsCache = favs;
   write(FAVS_KEY, favs);
   try { window.dispatchEvent(new CustomEvent("marketplace:favs")); } catch { /* noop */ }
   return idx < 0;
@@ -89,7 +138,7 @@ export function toggleFavorite(id: string): boolean {
 // ----- Collections -----
 
 export function getCollections(): Collection[] {
-  return read<Collection[]>(COLLECTIONS_KEY, []);
+  return loadCollections();
 }
 
 export function createCollection(name: string, description?: string): Collection {
@@ -100,32 +149,36 @@ export function createCollection(name: string, description?: string): Collection
     templateIds: [],
     createdAt: Date.now(),
   };
-  const list = getCollections();
+  const list = [...loadCollections()];
   list.unshift(c);
+  _collectionsCache = list;
   write(COLLECTIONS_KEY, list);
   try { window.dispatchEvent(new CustomEvent("marketplace:collections")); } catch { /* noop */ }
   return c;
 }
 
 export function deleteCollection(id: string) {
-  write(COLLECTIONS_KEY, getCollections().filter((c) => c.id !== id));
+  _collectionsCache = loadCollections().filter((c) => c.id !== id);
+  write(COLLECTIONS_KEY, _collectionsCache);
   try { window.dispatchEvent(new CustomEvent("marketplace:collections")); } catch { /* noop */ }
 }
 
 export function addToCollection(collectionId: string, templateId: string) {
-  const list = getCollections();
+  const list = loadCollections();
   const c = list.find((x) => x.id === collectionId);
   if (!c) return;
   if (!c.templateIds.includes(templateId)) c.templateIds.unshift(templateId);
+  _collectionsCache = list;
   write(COLLECTIONS_KEY, list);
   try { window.dispatchEvent(new CustomEvent("marketplace:collections")); } catch { /* noop */ }
 }
 
 export function removeFromCollection(collectionId: string, templateId: string) {
-  const list = getCollections();
+  const list = loadCollections();
   const c = list.find((x) => x.id === collectionId);
   if (!c) return;
   c.templateIds = c.templateIds.filter((t) => t !== templateId);
+  _collectionsCache = list;
   write(COLLECTIONS_KEY, list);
   try { window.dispatchEvent(new CustomEvent("marketplace:collections")); } catch { /* noop */ }
 }
