@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
 import { Route as AppStudioRouteImport } from './routes/app.studio'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppMarketplaceAnalyticsRouteImport } from './routes/app.marketplace-analytics'
 import { Route as AppMarketplaceRouteImport } from './routes/app.marketplace'
 import { Route as AppGeneratorRouteImport } from './routes/app.generator'
 import { Route as AppDocsRouteImport } from './routes/app.docs'
@@ -49,6 +50,11 @@ const AppStudioRoute = AppStudioRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMarketplaceAnalyticsRoute = AppMarketplaceAnalyticsRouteImport.update({
+  id: '/marketplace-analytics',
+  path: '/marketplace-analytics',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMarketplaceRoute = AppMarketplaceRouteImport.update({
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/marketplace': typeof AppMarketplaceRoute
+  '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/marketplace': typeof AppMarketplaceRoute
+  '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/marketplace': typeof AppMarketplaceRoute
+  '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/app/docs'
     | '/app/generator'
     | '/app/marketplace'
+    | '/app/marketplace-analytics'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/app/docs'
     | '/app/generator'
     | '/app/marketplace'
+    | '/app/marketplace-analytics'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/app/docs'
     | '/app/generator'
     | '/app/marketplace'
+    | '/app/marketplace-analytics'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -209,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/marketplace-analytics': {
+      id: '/app/marketplace-analytics'
+      path: '/marketplace-analytics'
+      fullPath: '/app/marketplace-analytics'
+      preLoaderRoute: typeof AppMarketplaceAnalyticsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/marketplace': {
       id: '/app/marketplace'
       path: '/marketplace'
@@ -253,6 +272,7 @@ interface AppRouteChildren {
   AppDocsRoute: typeof AppDocsRoute
   AppGeneratorRoute: typeof AppGeneratorRoute
   AppMarketplaceRoute: typeof AppMarketplaceRoute
+  AppMarketplaceAnalyticsRoute: typeof AppMarketplaceAnalyticsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppStudioRoute: typeof AppStudioRoute
   AppWorkspaceRoute: typeof AppWorkspaceRoute
@@ -264,6 +284,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDocsRoute: AppDocsRoute,
   AppGeneratorRoute: AppGeneratorRoute,
   AppMarketplaceRoute: AppMarketplaceRoute,
+  AppMarketplaceAnalyticsRoute: AppMarketplaceAnalyticsRoute,
   AppProfileRoute: AppProfileRoute,
   AppStudioRoute: AppStudioRoute,
   AppWorkspaceRoute: AppWorkspaceRoute,
