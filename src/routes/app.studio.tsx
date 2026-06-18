@@ -107,12 +107,15 @@ function StudioPage() {
           .then((res) => {
             setMermaid(res.mermaid);
             saveSnapshot(res.mermaid, payload.type as DType, payload.prompt);
-            try {
-              const { getTemplateById } = require("@/lib/templates/marketplace") as typeof import("@/lib/templates/marketplace");
-              // best-effort: name field doesn't carry id, so just log a generic event keyed by name
-              trackEvent({ templateId: payload.name, name: payload.name, category: "software-architecture", type: payload.type, kind: "generate" });
-              void getTemplateById;
-            } catch { /* noop */ }
+            if (payload.id) {
+              trackEvent({
+                templateId: payload.id,
+                name: payload.name,
+                category: payload.category ?? "software-architecture",
+                type: payload.type,
+                kind: "generate",
+              });
+            }
             toast.success("Diagram generated");
           })
           .catch((e: unknown) => toast.error((e as Error).message))
