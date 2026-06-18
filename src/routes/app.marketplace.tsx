@@ -326,7 +326,7 @@ function MarketplacePage() {
           <TemplateCard
             key={t.id}
             t={t}
-            fav={favorites.includes(t.id)}
+            fav={favSet.has(t.id)}
             collections={collections}
             activeCollection={activeCollection}
             onToggleFav={() => { setFavorites((cur) => toggleFavorite(t.id) ? [t.id, ...cur.filter((x) => x !== t.id)] : cur.filter((x) => x !== t.id)); }}
@@ -342,11 +342,18 @@ function MarketplacePage() {
           </div>
         )}
       </div>
+      {visible.length < filtered.length && (
+        <div className="mt-2 flex justify-center pb-6">
+          <Button variant="outline" size="sm" onClick={() => setVisibleCount((c) => c + 48)}>
+            Load more ({filtered.length - visible.length} remaining)
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
 
-function TemplateCard({
+const TemplateCard = memo(function TemplateCard({
   t, fav, collections, activeCollection, onToggleFav, onAddToCollection,
   onRemoveFromCollection, onUse, onOpen,
 }: {
