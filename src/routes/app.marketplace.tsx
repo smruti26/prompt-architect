@@ -1,11 +1,12 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search, Sparkles, Wand2, Star, Crown, Flame, Filter, TrendingUp,
   Boxes, Workflow, ListTree, Brain, Database, GitBranch, Network,
   Users, Map, Cloud, MonitorSmartphone, ArrowRight, Tag, BadgeCheck,
   Layers, Zap, Bot, Eye, Share2, BookOpen, Shuffle, GitMerge,
-  MessageSquareText, ShieldCheck, Activity,
+  MessageSquareText, ShieldCheck, Activity, Heart, FolderPlus, BarChart3,
+  Trash2, Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,13 +14,22 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import {
-  CATEGORIES, getMarketplaceTemplates, getCategoryCounts,
+  CATEGORIES, getMarketplaceTemplates, getCategoryCounts, getTemplateById,
   PENDING_TEMPLATE_KEY,
   type MarketplaceTemplate, type TemplateCategoryId, type TemplateType,
   type PendingTemplatePayload,
 } from "@/lib/templates/marketplace";
+import {
+  getFavorites, toggleFavorite, getCollections, createCollection,
+  addToCollection, deleteCollection, removeFromCollection, trackEvent,
+  type Collection,
+} from "@/lib/templates/marketplace-store";
 
 export const Route = createFileRoute("/app/marketplace")({
   head: () => ({
@@ -62,6 +72,24 @@ function MarketplacePage() {
   const [sort, setSort] = useState<SortKey>("popular");
   const [proOnly, setProOnly] = useState(false);
   const [newOnly, setNewOnly] = useState(false);
+  const [favOnly, setFavOnly] = useState(false);
+  const [activeCollection, setActiveCollection] = useState<string | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const viewLogged = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const refreshFavs = () => setFavorites(getFavorites());
+    const refreshCols = () => setCollections(getCollections());
+    refreshFavs(); refreshCols();
+    window.addEventListener("marketplace:favs", refreshFavs);
+    window.addEventListener("marketplace:collections", refreshCols);
+    return () => {
+      window.removeEventListener("marketplace:favs", refreshFavs);
+      window.removeEventListener("marketplace:collections", refreshCols);
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -71,6 +99,11 @@ function MarketplacePage() {
       if (difficulty !== "all" && t.difficulty !== difficulty) return false;
       if (proOnly && !t.isPro) return false;
       if (newOnly && !t.isNew) return false;
+      if (favOnly && !favorites.includes(t.id)) return false;
+      if (activeCollection) {
+        const c = collections.find((x) => x.id === activeCollection);
+        if (!c || !c.templateIds.includes(t.id)) return false;
+      }
       if (!q) return true;
       const hay = `${t.name} ${t.description} ${t.subcategory} ${t.tags.join(" ")}`.toLowerCase();
       return hay.includes(q);
@@ -82,15 +115,31 @@ function MarketplacePage() {
       return a.name.localeCompare(b.name);
     });
     return list;
-  }, [all, query, activeCategory, activeType, difficulty, sort, proOnly, newOnly]);
+  }, [all, query, activeCategory, activeType, difficulty, sort, proOnly, newOnly, favOnly, favorites, activeCollection, collections]);
 
   const visible = filtered.slice(0, 120);
+
+  // Log a single view event per template per session as it appears in the list.
+  useEffect(() => {
+    for (const t of visible) {
+      if (!viewLogged.current.has(t.id)) {
+        viewLogged.current.add(t.id);
+        trackEvent({ templateId: t.id, name: t.name, category: t.category, type: t.type, kind: "view" });
+      }
+    }
+  }, [visible]);
 
   const launch = (t: MarketplaceTemplate, autorun: boolean) => {
     const payload: PendingTemplatePayload = { prompt: t.prompt, type: t.type, name: t.name, autorun };
     try { sessionStorage.setItem(PENDING_TEMPLATE_KEY, JSON.stringify(payload)); } catch { /* noop */ }
+    trackEvent({ templateId: t.id, name: t.name, category: t.category, type: t.type, kind: "launch" });
     toast.success(`Loaded "${t.name}" into Studio`);
     navigate({ to: "/app/studio" });
+  };
+
+  const openDetail = (t: MarketplaceTemplate) => {
+    trackEvent({ templateId: t.id, name: t.name, category: t.category, type: t.type, kind: "detail" });
+    navigate({ to: "/app/template/$id", params: { id: t.id } });
   };
 
   return (
@@ -116,6 +165,9 @@ function MarketplacePage() {
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => navigate({ to: "/app/studio" })}>
               <Wand2 className="mr-2 h-4 w-4" /> Open Studio
+            </Button>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/app/marketplace-analytics"><BarChart3 className="mr-2 h-4 w-4" /> Analytics</Link>
             </Button>
             <Button size="sm" onClick={() => { setSort("new"); setNewOnly(true); }}>
               <Flame className="mr-2 h-4 w-4" /> What's new
@@ -182,6 +234,10 @@ function MarketplacePage() {
         <Button variant={newOnly ? "default" : "outline"} size="sm" onClick={() => setNewOnly((v) => !v)}>
           <Sparkles className="mr-2 h-3.5 w-3.5" /> New
         </Button>
+        <Button variant={favOnly ? "default" : "outline"} size="sm" onClick={() => setFavOnly((v) => !v)}>
+          <Heart className={`mr-2 h-3.5 w-3.5 ${favOnly ? "fill-current" : ""}`} /> Favorites
+          {favorites.length > 0 && <Badge variant="secondary" className="ml-2 h-4 px-1 text-[10px]">{favorites.length}</Badge>}
+        </Button>
       </div>
 
       {/* Category tabs */}
@@ -199,6 +255,22 @@ function MarketplacePage() {
           </TabsList>
         </ScrollArea>
       </Tabs>
+
+      {/* Collections bar */}
+      <CollectionsBar
+        collections={collections}
+        active={activeCollection}
+        onSelect={setActiveCollection}
+        onCreate={() => {
+          if (!newCollectionName.trim()) { toast.error("Name your collection first"); return; }
+          createCollection(newCollectionName.trim());
+          setNewCollectionName("");
+          toast.success("Collection created");
+        }}
+        onDelete={(id) => { deleteCollection(id); if (activeCollection === id) setActiveCollection(null); }}
+        name={newCollectionName}
+        onName={setNewCollectionName}
+      />
 
       {/* Category strip when "all" */}
       {activeCategory === "all" && (
@@ -238,7 +310,18 @@ function MarketplacePage() {
 
       <div className="mt-3 grid grid-cols-1 gap-3 overflow-auto pb-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {visible.map((t) => (
-          <TemplateCard key={t.id} t={t} onUse={() => launch(t, true)} onPreview={() => launch(t, false)} />
+          <TemplateCard
+            key={t.id}
+            t={t}
+            fav={favorites.includes(t.id)}
+            collections={collections}
+            activeCollection={activeCollection}
+            onToggleFav={() => { setFavorites((cur) => toggleFavorite(t.id) ? [t.id, ...cur.filter((x) => x !== t.id)] : cur.filter((x) => x !== t.id)); }}
+            onAddToCollection={(cid) => { addToCollection(cid, t.id); toast.success("Added to collection"); }}
+            onRemoveFromCollection={(cid) => { removeFromCollection(cid, t.id); toast.success("Removed"); }}
+            onUse={() => launch(t, true)}
+            onOpen={() => openDetail(t)}
+          />
         ))}
         {visible.length === 0 && (
           <div className="col-span-full rounded-xl border bg-muted/20 p-10 text-center text-sm text-muted-foreground">
@@ -250,7 +333,16 @@ function MarketplacePage() {
   );
 }
 
-function TemplateCard({ t, onUse, onPreview }: { t: MarketplaceTemplate; onUse: () => void; onPreview: () => void }) {
+function TemplateCard({
+  t, fav, collections, activeCollection, onToggleFav, onAddToCollection,
+  onRemoveFromCollection, onUse, onOpen,
+}: {
+  t: MarketplaceTemplate; fav: boolean; collections: Collection[];
+  activeCollection: string | null;
+  onToggleFav: () => void; onAddToCollection: (cid: string) => void;
+  onRemoveFromCollection: (cid: string) => void;
+  onUse: () => void; onOpen: () => void;
+}) {
   const Icon = TYPE_ICONS[t.type];
   const cat = CATEGORIES.find((c) => c.id === t.category);
   return (
@@ -291,12 +383,71 @@ function TemplateCard({ t, onUse, onPreview }: { t: MarketplaceTemplate; onUse: 
 
         <div className="mt-3 flex items-center gap-2">
           <Button size="sm" className="flex-1" onClick={onUse}>
-            <Wand2 className="mr-2 h-3.5 w-3.5" /> Generate
+            <Wand2 className="mr-2 h-3.5 w-3.5" /> Auto-generate
           </Button>
-          <Button size="sm" variant="outline" onClick={onPreview}>
-            <Eye className="mr-2 h-3.5 w-3.5" /> Open
+          <Button size="sm" variant="outline" onClick={onOpen} title="View details">
+            <Eye className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="sm" variant={fav ? "default" : "outline"} onClick={onToggleFav} title={fav ? "Unfavorite" : "Favorite"}>
+            <Heart className={`h-3.5 w-3.5 ${fav ? "fill-current" : ""}`} />
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" title="Add to collection"><FolderPlus className="h-3.5 w-3.5" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-60">
+              <DropdownMenuLabel>Collections</DropdownMenuLabel>
+              {collections.length === 0 && <div className="px-2 py-1 text-xs text-muted-foreground">No collections yet.</div>}
+              {collections.map((c) => {
+                const isIn = c.templateIds.includes(t.id);
+                return (
+                  <DropdownMenuItem key={c.id} onClick={() => isIn ? onRemoveFromCollection(c.id) : onAddToCollection(c.id)}>
+                    {isIn ? "Remove from" : "Add to"} {c.name}
+                  </DropdownMenuItem>
+                );
+              })}
+              {activeCollection && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => onRemoveFromCollection(activeCollection)}>
+                    <Trash2 className="mr-2 h-3.5 w-3.5" /> Remove from current
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CollectionsBar({
+  collections, active, onSelect, onCreate, onDelete, name, onName,
+}: {
+  collections: Collection[]; active: string | null;
+  onSelect: (id: string | null) => void; onCreate: () => void;
+  onDelete: (id: string) => void; name: string; onName: (v: string) => void;
+}) {
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border bg-background/40 p-2">
+      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <FolderPlus className="h-3.5 w-3.5" /> Collections
+      </div>
+      <Button size="sm" variant={active === null ? "default" : "outline"} className="h-7 px-2 text-[11px]" onClick={() => onSelect(null)}>All</Button>
+      {collections.map((c) => (
+        <div key={c.id} className="flex items-center gap-1">
+          <Button size="sm" variant={active === c.id ? "default" : "outline"} className="h-7 px-2 text-[11px]" onClick={() => onSelect(c.id)}>
+            {c.name} <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">{c.templateIds.length}</Badge>
+          </Button>
+          <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground" onClick={() => onDelete(c.id)} title="Delete collection">
+            <Trash2 className="h-3 w-3" />
           </Button>
         </div>
+      ))}
+      <div className="ml-auto flex items-center gap-1">
+        <Input value={name} onChange={(e) => onName(e.target.value)} placeholder="New collection" className="h-7 w-44 text-[11px]" />
+        <Button size="sm" className="h-7 px-2 text-[11px]" onClick={onCreate}><Plus className="mr-1 h-3 w-3" /> Add</Button>
       </div>
     </div>
   );
