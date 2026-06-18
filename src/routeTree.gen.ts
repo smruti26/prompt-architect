@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
+import { Route as AppStudioRouteImport } from './routes/app.studio'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
 import { Route as AppGeneratorRouteImport } from './routes/app.generator'
 import { Route as AppDocsRouteImport } from './routes/app.docs'
@@ -37,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppWorkspaceRoute = AppWorkspaceRouteImport.update({
   id: '/workspace',
   path: '/workspace',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppStudioRoute = AppStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProfileRoute = AppProfileRouteImport.update({
@@ -74,6 +80,7 @@ export interface FileRoutesByFullPath {
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
 }
 export interface FileRoutesByTo {
@@ -85,6 +92,7 @@ export interface FileRoutesByTo {
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
 }
 export interface FileRoutesById {
@@ -97,6 +105,7 @@ export interface FileRoutesById {
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
   '/app/profile': typeof AppProfileRoute
+  '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
 }
 export interface FileRouteTypes {
@@ -110,6 +119,7 @@ export interface FileRouteTypes {
     | '/app/docs'
     | '/app/generator'
     | '/app/profile'
+    | '/app/studio'
     | '/app/workspace'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -121,6 +131,7 @@ export interface FileRouteTypes {
     | '/app/docs'
     | '/app/generator'
     | '/app/profile'
+    | '/app/studio'
     | '/app/workspace'
   id:
     | '__root__'
@@ -132,6 +143,7 @@ export interface FileRouteTypes {
     | '/app/docs'
     | '/app/generator'
     | '/app/profile'
+    | '/app/studio'
     | '/app/workspace'
   fileRoutesById: FileRoutesById
 }
@@ -169,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/workspace'
       fullPath: '/app/workspace'
       preLoaderRoute: typeof AppWorkspaceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/studio': {
+      id: '/app/studio'
+      path: '/studio'
+      fullPath: '/app/studio'
+      preLoaderRoute: typeof AppStudioRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/profile': {
@@ -215,6 +234,7 @@ interface AppRouteChildren {
   AppDocsRoute: typeof AppDocsRoute
   AppGeneratorRoute: typeof AppGeneratorRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppStudioRoute: typeof AppStudioRoute
   AppWorkspaceRoute: typeof AppWorkspaceRoute
 }
 
@@ -224,6 +244,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDocsRoute: AppDocsRoute,
   AppGeneratorRoute: AppGeneratorRoute,
   AppProfileRoute: AppProfileRoute,
+  AppStudioRoute: AppStudioRoute,
   AppWorkspaceRoute: AppWorkspaceRoute,
 }
 
