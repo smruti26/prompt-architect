@@ -15,8 +15,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
 import { Route as AppStudioRouteImport } from './routes/app.studio'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppPerfRouteImport } from './routes/app.perf'
 import { Route as AppMarketplaceAnalyticsRouteImport } from './routes/app.marketplace-analytics'
 import { Route as AppMarketplaceRouteImport } from './routes/app.marketplace'
+import { Route as AppLabsRouteImport } from './routes/app.labs'
 import { Route as AppGeneratorRouteImport } from './routes/app.generator'
 import { Route as AppDocsRouteImport } from './routes/app.docs'
 import { Route as AppDiagramsRouteImport } from './routes/app.diagrams'
@@ -53,6 +55,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPerfRoute = AppPerfRouteImport.update({
+  id: '/perf',
+  path: '/perf',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMarketplaceAnalyticsRoute = AppMarketplaceAnalyticsRouteImport.update({
   id: '/marketplace-analytics',
   path: '/marketplace-analytics',
@@ -61,6 +68,11 @@ const AppMarketplaceAnalyticsRoute = AppMarketplaceAnalyticsRouteImport.update({
 const AppMarketplaceRoute = AppMarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabsRoute = AppLabsRouteImport.update({
+  id: '/labs',
+  path: '/labs',
   getParentRoute: () => AppRoute,
 } as any)
 const AppGeneratorRoute = AppGeneratorRouteImport.update({
@@ -97,8 +109,10 @@ export interface FileRoutesByFullPath {
   '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
+  '/app/labs': typeof AppLabsRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
+  '/app/perf': typeof AppPerfRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -112,8 +126,10 @@ export interface FileRoutesByTo {
   '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
+  '/app/labs': typeof AppLabsRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
+  '/app/perf': typeof AppPerfRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -128,8 +144,10 @@ export interface FileRoutesById {
   '/app/diagrams': typeof AppDiagramsRoute
   '/app/docs': typeof AppDocsRoute
   '/app/generator': typeof AppGeneratorRoute
+  '/app/labs': typeof AppLabsRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
+  '/app/perf': typeof AppPerfRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -145,8 +163,10 @@ export interface FileRouteTypes {
     | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
+    | '/app/labs'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
+    | '/app/perf'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -160,8 +180,10 @@ export interface FileRouteTypes {
     | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
+    | '/app/labs'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
+    | '/app/perf'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -175,8 +197,10 @@ export interface FileRouteTypes {
     | '/app/diagrams'
     | '/app/docs'
     | '/app/generator'
+    | '/app/labs'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
+    | '/app/perf'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -233,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/perf': {
+      id: '/app/perf'
+      path: '/perf'
+      fullPath: '/app/perf'
+      preLoaderRoute: typeof AppPerfRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/marketplace-analytics': {
       id: '/app/marketplace-analytics'
       path: '/marketplace-analytics'
@@ -245,6 +276,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/app/marketplace'
       preLoaderRoute: typeof AppMarketplaceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/labs': {
+      id: '/app/labs'
+      path: '/labs'
+      fullPath: '/app/labs'
+      preLoaderRoute: typeof AppLabsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/generator': {
@@ -290,8 +328,10 @@ interface AppRouteChildren {
   AppDiagramsRoute: typeof AppDiagramsRoute
   AppDocsRoute: typeof AppDocsRoute
   AppGeneratorRoute: typeof AppGeneratorRoute
+  AppLabsRoute: typeof AppLabsRoute
   AppMarketplaceRoute: typeof AppMarketplaceRoute
   AppMarketplaceAnalyticsRoute: typeof AppMarketplaceAnalyticsRoute
+  AppPerfRoute: typeof AppPerfRoute
   AppProfileRoute: typeof AppProfileRoute
   AppStudioRoute: typeof AppStudioRoute
   AppWorkspaceRoute: typeof AppWorkspaceRoute
@@ -303,8 +343,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppDiagramsRoute: AppDiagramsRoute,
   AppDocsRoute: AppDocsRoute,
   AppGeneratorRoute: AppGeneratorRoute,
+  AppLabsRoute: AppLabsRoute,
   AppMarketplaceRoute: AppMarketplaceRoute,
   AppMarketplaceAnalyticsRoute: AppMarketplaceAnalyticsRoute,
+  AppPerfRoute: AppPerfRoute,
   AppProfileRoute: AppProfileRoute,
   AppStudioRoute: AppStudioRoute,
   AppWorkspaceRoute: AppWorkspaceRoute,

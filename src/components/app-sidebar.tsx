@@ -23,6 +23,8 @@ import {
   Wand2,
   Store,
   BarChart3,
+  FlaskConical,
+  Gauge,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "./logo";
@@ -37,6 +39,8 @@ const items = [
   { title: "Diagram Studio", url: "/app/diagrams", icon: GitBranch },
   { title: "Code Generator", url: "/app/generator", icon: Code2 },
   { title: "Documentation", url: "/app/docs", icon: FileText },
+  { title: "AI Labs", url: "/app/labs", icon: FlaskConical },
+  { title: "Performance", url: "/app/perf", icon: Gauge },
   { title: "Profile", url: "/app/profile", icon: UserCircle2 },
 ];
 
