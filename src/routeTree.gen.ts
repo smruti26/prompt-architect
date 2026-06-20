@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppWorkspaceRouteImport } from './routes/app.workspace'
 import { Route as AppStudioRouteImport } from './routes/app.studio'
 import { Route as AppProfileRouteImport } from './routes/app.profile'
+import { Route as AppPerfRouteImport } from './routes/app.perf'
 import { Route as AppMarketplaceAnalyticsRouteImport } from './routes/app.marketplace-analytics'
 import { Route as AppMarketplaceRouteImport } from './routes/app.marketplace'
 import { Route as AppLabsRouteImport } from './routes/app.labs'
@@ -52,6 +53,11 @@ const AppStudioRoute = AppStudioRouteImport.update({
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPerfRoute = AppPerfRouteImport.update({
+  id: '/perf',
+  path: '/perf',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMarketplaceAnalyticsRoute = AppMarketplaceAnalyticsRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/app/labs': typeof AppLabsRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
+  '/app/perf': typeof AppPerfRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/app/labs': typeof AppLabsRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
+  '/app/perf': typeof AppPerfRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/app/labs': typeof AppLabsRoute
   '/app/marketplace': typeof AppMarketplaceRoute
   '/app/marketplace-analytics': typeof AppMarketplaceAnalyticsRoute
+  '/app/perf': typeof AppPerfRoute
   '/app/profile': typeof AppProfileRoute
   '/app/studio': typeof AppStudioRoute
   '/app/workspace': typeof AppWorkspaceRoute
@@ -157,6 +166,7 @@ export interface FileRouteTypes {
     | '/app/labs'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
+    | '/app/perf'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -173,6 +183,7 @@ export interface FileRouteTypes {
     | '/app/labs'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
+    | '/app/perf'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -189,6 +200,7 @@ export interface FileRouteTypes {
     | '/app/labs'
     | '/app/marketplace'
     | '/app/marketplace-analytics'
+    | '/app/perf'
     | '/app/profile'
     | '/app/studio'
     | '/app/workspace'
@@ -243,6 +255,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/app/profile'
       preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/perf': {
+      id: '/app/perf'
+      path: '/perf'
+      fullPath: '/app/perf'
+      preLoaderRoute: typeof AppPerfRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/marketplace-analytics': {
@@ -312,6 +331,7 @@ interface AppRouteChildren {
   AppLabsRoute: typeof AppLabsRoute
   AppMarketplaceRoute: typeof AppMarketplaceRoute
   AppMarketplaceAnalyticsRoute: typeof AppMarketplaceAnalyticsRoute
+  AppPerfRoute: typeof AppPerfRoute
   AppProfileRoute: typeof AppProfileRoute
   AppStudioRoute: typeof AppStudioRoute
   AppWorkspaceRoute: typeof AppWorkspaceRoute
@@ -326,6 +346,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabsRoute: AppLabsRoute,
   AppMarketplaceRoute: AppMarketplaceRoute,
   AppMarketplaceAnalyticsRoute: AppMarketplaceAnalyticsRoute,
+  AppPerfRoute: AppPerfRoute,
   AppProfileRoute: AppProfileRoute,
   AppStudioRoute: AppStudioRoute,
   AppWorkspaceRoute: AppWorkspaceRoute,
